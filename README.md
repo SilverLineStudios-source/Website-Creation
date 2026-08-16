@@ -55,3 +55,18 @@ skills for the GSAP animation library:
 - `gsap-performance` — animation performance guidance
 
 Source: https://github.com/greensock/gsap-skills (license in `.claude-plugin/third-party/gsap-skills-LICENSE`).
+
+## Power Design (brand-native generator)
+
+Also included: [ItsssssJack/power-design](https://github.com/ItsssssJack/power-design) (`power-design`),
+which generates on-brand HTML decks or full responsive websites by combining brand DNA (colors, fonts,
+logo, voice — extracted via Firecrawl from a URL, or picked from 70+ pre-built brand profiles under
+`brands/`) with two codified rulebooks:
+- `principles/design-principles.md` — 20 non-negotiable rules for slide decks
+- `principles/web-principles.md` — 20 non-negotiable rules for responsive websites
+
+Note: pulling brand DNA from a live URL requires the Firecrawl MCP server; the pre-built brand library
+and default house style work without it. The upstream repo's illustrative rule images and email assets
+were left out here since they're not read by the skill itself.
+
+Source: https://github.com/ItsssssJack/power-design (license in `.claude-plugin/third-party/power-design-LICENSE`).

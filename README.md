@@ -28,3 +28,15 @@ with shadcn/ui components:
   (Vega, Nova, Maia, Lyra, Mira)
 
 Source: https://github.com/mattbx/shadcn-skills (license in `.claude-plugin/third-party/shadcn-skills-LICENSE`).
+
+## Design style skills
+
+Also included: [bergside/awesome-design-skills](https://github.com/bergside/awesome-design-skills), a
+registry of 67 self-contained visual-direction skills (one per named style, e.g. `glassmorphism`,
+`brutalism`, `neumorphism`, `minimal`, `material`, `retro`, `vibrant`, `enterprise`, `editorial`, and
+many more). Each gives typography scale, color tokens, spacing, component rules, accessibility
+requirements, and do/don't guidance for that specific style — use one when the project needs a
+particular visual direction.
+
+Source: https://github.com/bergside/awesome-design-skills (license in
+`.claude-plugin/third-party/awesome-design-skills-LICENSE`).

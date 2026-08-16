@@ -40,3 +40,18 @@ particular visual direction.
 
 Source: https://github.com/bergside/awesome-design-skills (license in
 `.claude-plugin/third-party/awesome-design-skills-LICENSE`).
+
+## GSAP animation skills
+
+Also included: [greensock/gsap-skills](https://github.com/greensock/gsap-skills), the official GreenSock
+skills for the GSAP animation library:
+- `gsap-core` — core tween API (`gsap.to/from/fromTo`, easing, duration, stagger, `matchMedia`)
+- `gsap-timeline` — sequencing multiple animation steps
+- `gsap-scrolltrigger` — scroll-linked animation
+- `gsap-react` — React-specific usage (`useGSAP`, refs, cleanup)
+- `gsap-frameworks` — Vue/Svelte/Nuxt/vanilla usage patterns
+- `gsap-plugins` — Flip, Draggable, and other GSAP plugins
+- `gsap-utils` — helper functions (clamp, mapRange, etc.)
+- `gsap-performance` — animation performance guidance
+
+Source: https://github.com/greensock/gsap-skills (license in `.claude-plugin/third-party/gsap-skills-LICENSE`).

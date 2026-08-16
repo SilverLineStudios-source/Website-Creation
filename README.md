@@ -1,5 +1,14 @@
 # Website-Creation
 
+## Site prototype
+
+`index.html` is a self-contained one-page concept build for Silver Line Studios (Calgary, AB film/video
+production). Dark monochrome chrome-on-black identity built from the studio's own logo, with a
+scroll-driven camera-iris zoom as the signature hero transition (GSAP + ScrollTrigger, respects
+`prefers-reduced-motion`). Fonts (Anton, Archivo) and GSAP are embedded inline, so the file opens
+standalone in any browser with no build step and no external requests. Reel/portrait imagery is placeholder
+pending real photography or footage.
+
 ## UI/UX Pro Max skill
 
 This repo includes the [UI/UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) design

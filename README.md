@@ -17,3 +17,14 @@ Included skill bundles:
 - `banner-design`, `slides` — supporting reference material
 
 Source: https://github.com/nextlevelbuilder/ui-ux-pro-max-skill (MIT licensed, see `.claude-plugin/LICENSE`).
+
+## shadcn/ui skills
+
+Also included: [mattbx/shadcn-skills](https://github.com/mattbx/shadcn-skills), two skills for working
+with shadcn/ui components:
+- `shadcn-component-discovery` — searches shadcn-compatible registries (Magic UI, Aceternity, ReUI,
+  Animate UI, DiceUI, Tailark, AI Elements, etc.) for existing components before building custom UI
+- `shadcn-component-review` — reviews components against shadcn design patterns and theme styles
+  (Vega, Nova, Maia, Lyra, Mira)
+
+Source: https://github.com/mattbx/shadcn-skills (license in `.claude-plugin/third-party/shadcn-skills-LICENSE`).

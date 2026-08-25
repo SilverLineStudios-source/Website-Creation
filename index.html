@@ -23,6 +23,21 @@
   "description": "Film and video production studio based in Calgary, Alberta."
 }
 </script>
+<!-- FAQ answers below are draft policy language; confirm exact timelines, revision counts, and travel terms before relying on them. -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    { "@type": "Question", "name": "How long does a project take?", "acceptedAnswer": { "@type": "Answer", "text": "Most commercial and brand films run four to six weeks from the first call to final delivery. Smaller projects move faster, and bigger ones get an honest timeline once the scope is clear." } },
+    { "@type": "Question", "name": "What does a project cost?", "acceptedAnswer": { "@type": "Answer", "text": "Every project gets scoped and quoted after a short call, since a fifteen second product cutdown and a full brand documentary cost very different things." } },
+    { "@type": "Question", "name": "Do you shoot outside Calgary?", "acceptedAnswer": { "@type": "Answer", "text": "Yes. Alberta-wide and beyond for the right project. Travel gets scoped into the quote up front." } },
+    { "@type": "Question", "name": "We don't have a script yet. Is that a problem?", "acceptedAnswer": { "@type": "Answer", "text": "Not at all. Concept and scripting are part of the process." } },
+    { "@type": "Question", "name": "Who owns the footage once the project wraps?", "acceptedAnswer": { "@type": "Answer", "text": "The client does. Final files and raw footage are handed over at delivery." } },
+    { "@type": "Question", "name": "How many rounds of revisions are included?", "acceptedAnswer": { "@type": "Answer", "text": "Two rounds of revisions are built into every project scope, with more available if a project needs them." } }
+  ]
+}
+</script>
 <style>
 /* ============================================================
    SILVER LINE STUDIOS — design tokens
@@ -57,6 +72,8 @@
   --line:rgba(231,234,238,.14);
   --line-strong:rgba(231,234,238,.34);
   --glass:rgba(255,255,255,.95);
+  --accent:#cb8a4e;
+  --accent-dim:rgba(203,138,78,.35);
 
   --radius-s:3px;
   --radius-m:6px;
@@ -123,6 +140,7 @@ button{ font:inherit; color:inherit; background:none; border:0; cursor:pointer; 
 .skip-link:focus{ top:1rem; }
 
 .wrap{
+  position:relative;
   max-width:var(--container);
   margin-inline:auto;
   padding-inline:clamp(1.25rem, 1rem + 2vw, 3rem);
@@ -163,6 +181,11 @@ h1,h2,.section-title{
   letter-spacing:.005em;
   text-wrap:balance;
   color:var(--chrome-100);
+  text-shadow:0 0 36px rgba(243,244,246,.1);
+}
+
+@media (hover:hover) and (pointer:fine){
+  .service-card, .work-tile{ transition:transform .3s var(--ease-out), background-color .3s; }
 }
 
 .section{ padding-block:var(--sp-8); border-top:1px solid var(--line); }
@@ -378,6 +401,46 @@ h1,h2,.section-title{
   position:absolute; inset:0; z-index:5; background:var(--chrome-100); opacity:0; pointer-events:none;
 }
 
+/* signature viewfinder frame — draws itself in as the hero enters */
+.hero-frame-draw{
+  position:absolute; inset:clamp(1rem,4vw,3rem); z-index:2; pointer-events:none;
+  width:calc(100% - clamp(2rem,8vw,6rem)); height:calc(100% - clamp(2rem,8vw,6rem));
+}
+.hero-frame-draw rect{
+  fill:none; stroke:var(--line-strong); stroke-width:.16;
+  stroke-dasharray:100; stroke-dashoffset:100;
+}
+
+/* diagonal light sweep during the lens zoom */
+.light-sweep{
+  position:absolute; inset:-20% -60%; z-index:2; pointer-events:none;
+  background:linear-gradient(115deg, transparent 40%, rgba(255,255,255,.07) 49%, rgba(255,255,255,.14) 50%, rgba(255,255,255,.07) 51%, transparent 60%);
+  opacity:0; transform:translateX(-30%);
+}
+
+/* whisper-level drifting particles, reused across sections via JS */
+.particle-field{ position:absolute; inset:0; z-index:1; pointer-events:none; overflow:hidden; }
+.particle{
+  position:absolute; border-radius:50%;
+  background:var(--chrome-300); opacity:0;
+  animation:particleDrift linear infinite;
+}
+.wrap > .particle-field{ z-index:-1; }
+@keyframes particleDrift{
+  0%{ transform:translateY(6%) scale(.8); opacity:0; }
+  8%{ opacity:var(--p-op,.35); }
+  92%{ opacity:var(--p-op,.35); }
+  100%{ transform:translateY(-106%) scale(1.1); opacity:0; }
+}
+
+.chapter-caption{
+  position:absolute; inset:0; margin:auto; height:max-content;
+  z-index:2; padding-inline:1.25rem; text-align:center; max-width:36rem;
+  opacity:0; font-family:var(--font-display); text-transform:uppercase;
+  font-size:clamp(1.1rem,.9rem + 1.4vw,1.75rem); letter-spacing:.06em;
+  color:var(--chrome-100); text-shadow:0 0 24px rgba(243,244,246,.35);
+}
+
 .statement{
   position:absolute; inset:0; margin:auto; height:max-content;
   z-index:2; padding-inline:1.25rem; text-align:center; max-width:52rem;
@@ -418,6 +481,48 @@ h1,h2,.section-title{
 .service-card p{ color:var(--chrome-600); font-size:.9375rem; }
 .service-num{ font-size:.75rem; color:var(--chrome-700); letter-spacing:.1em; }
 
+/* ============ grade compare (interactive) ============ */
+.grade-section{ position:relative; overflow:hidden; }
+.grade-compare{
+  position:relative; width:100%; aspect-ratio:16/9; max-height:640px;
+  overflow:hidden; cursor:ew-resize; touch-action:pan-y; user-select:none;
+  border:1px solid var(--line-strong);
+}
+.grade-panel{ position:absolute; inset:0; }
+.grade-raw{
+  background:
+    radial-gradient(circle at 30% 25%, rgba(180,184,190,.22), transparent 55%),
+    linear-gradient(160deg,#3a3c40,#26282b 55%,#3a3c40);
+  filter:saturate(.55) brightness(.92) contrast(.85);
+}
+.grade-graded{
+  background:
+    radial-gradient(circle at 72% 20%, rgba(203,138,78,.28), transparent 48%),
+    radial-gradient(circle at 20% 85%, rgba(120,90,50,.18), transparent 55%),
+    linear-gradient(160deg,#151517,#08090a 60%,#151517);
+  filter:saturate(1.08) contrast(1.18) brightness(.98);
+  clip-path:inset(0 50% 0 0);
+}
+.grade-tag{
+  position:absolute; top:1rem; font-size:.75rem; font-weight:700; letter-spacing:.14em;
+  color:var(--chrome-300); background:rgba(8,9,10,.55); padding:.3rem .6rem;
+  border:1px solid var(--line-strong); backdrop-filter:blur(4px);
+}
+.grade-raw .grade-tag{ left:1rem; }
+.grade-graded .grade-tag{ right:1rem; }
+.grade-handle{
+  position:absolute; top:0; bottom:0; left:50%; width:2px;
+  background:var(--chrome-100); box-shadow:0 0 12px rgba(255,255,255,.5);
+  display:flex; align-items:center; justify-content:center;
+}
+.grade-handle:focus-visible .grade-handle-grip{ outline:2px solid var(--accent); outline-offset:4px; }
+.grade-handle-grip{
+  width:40px; height:40px; border-radius:50%; background:var(--chrome-100);
+  display:flex; align-items:center; justify-content:center; gap:3px;
+  box-shadow:0 6px 20px rgba(0,0,0,.4);
+}
+.grade-handle-grip i{ width:2px; height:14px; background:var(--ink); border-radius:1px; }
+
 /* ============ work grid ============ */
 .work-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp-2); }
 .work-tile{
@@ -448,6 +553,40 @@ h1,h2,.section-title{
 .process-item h3{ font-size:1.05rem; color:var(--chrome-100); font-weight:700; }
 .process-item p{ color:var(--chrome-600); font-size:.9375rem; }
 
+/* ============ why us ============ */
+.why-section{ position:relative; }
+.why-grid{ position:relative; display:grid; grid-template-columns:repeat(4,1fr); gap:var(--sp-4); padding-top:2.75rem; }
+.why-connector{ position:absolute; top:0; left:0; width:100%; height:4px; overflow:visible; }
+.why-connector line{
+  stroke:var(--line-strong); stroke-width:1; vector-effect:non-scaling-stroke;
+  stroke-dasharray:100; stroke-dashoffset:100;
+}
+.why-chip{ display:flex; flex-direction:column; gap:.65rem; }
+.why-num{ font-family:var(--font-display); font-size:1.4rem; color:var(--accent); }
+.why-chip h3{ font-size:1.05rem; color:var(--chrome-100); font-weight:700; }
+.why-chip p{ color:var(--chrome-600); font-size:.9375rem; }
+
+/* ============ faq ============ */
+.faq-list{ max-width:46rem; border-top:1px solid var(--line); }
+.faq-item{ border-bottom:1px solid var(--line); }
+.faq-q{
+  width:100%; display:flex; align-items:center; justify-content:space-between; gap:1rem;
+  padding-block:1.4rem; text-align:left; font-weight:700; font-size:1.05rem; color:var(--chrome-100);
+}
+.faq-q span:first-child{ text-wrap:balance; }
+.faq-icon{ position:relative; width:18px; height:18px; flex:none; }
+.faq-icon::before,.faq-icon::after{
+  content:""; position:absolute; inset:0; margin:auto; background:var(--chrome-300);
+  transition:transform .3s var(--ease-out), opacity .3s;
+}
+.faq-icon::before{ width:100%; height:1.5px; }
+.faq-icon::after{ width:1.5px; height:100%; }
+.faq-item.is-open .faq-icon::after{ transform:rotate(90deg); opacity:0; }
+.faq-item.is-open .faq-q{ color:var(--chrome-100); }
+.faq-a{ max-height:0; overflow:hidden; transition:max-height .45s var(--ease-out); }
+.faq-item.is-open .faq-a{ max-height:14rem; }
+.faq-a p{ padding-bottom:1.4rem; color:var(--chrome-500); max-width:38rem; }
+
 /* ============ studio ============ */
 .studio-grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:var(--sp-7); align-items:center; }
 .studio-copy p + p{ margin-top:1rem; }
@@ -463,17 +602,37 @@ h1,h2,.section-title{
 
 /* ============ contact ============ */
 .contact-section{ position:relative; overflow:hidden; }
+.contact-layout{ display:grid; grid-template-columns:1.3fr .7fr; gap:var(--sp-6); align-items:start; }
+
+.inquiry-form{ display:flex; flex-direction:column; gap:1.25rem; }
+.form-row{ display:flex; flex-direction:column; gap:.5rem; }
+.form-row-split{ display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; }
+.form-row-split > div{ display:flex; flex-direction:column; gap:.5rem; }
+.inquiry-form label{ font-size:.75rem; letter-spacing:.1em; text-transform:uppercase; color:var(--chrome-600); }
+.inquiry-form input, .inquiry-form select, .inquiry-form textarea{
+  background:var(--ink-raised); border:1px solid var(--line); color:var(--chrome-100);
+  padding:.85rem 1rem; font:inherit; font-size:.9375rem; border-radius:var(--radius-s);
+  transition:border-color .25s, background-color .25s;
+}
+.inquiry-form input:focus, .inquiry-form select:focus, .inquiry-form textarea:focus{
+  outline:none; border-color:var(--accent); background:var(--ink-raised-2);
+}
+.inquiry-form input.is-invalid, .inquiry-form textarea.is-invalid{ border-color:#e6484f; }
+.inquiry-form textarea{ resize:vertical; min-height:6rem; font-family:inherit; }
+.inquiry-form .btn{ align-self:flex-start; margin-top:.25rem; }
+.form-note{ font-size:.8125rem; color:var(--chrome-700); transition:color .3s; }
+.form-note.is-success{ color:var(--chrome-300); }
+
 .contact-card{
   position:relative; border:1px solid var(--line-strong); background:var(--ink-raised);
-  padding:var(--sp-6) var(--sp-5); display:grid; grid-template-columns:1fr auto; gap:var(--sp-6); align-items:end;
+  padding:var(--sp-5);
 }
-.contact-headline{ font-size:var(--fs-h1); max-width:16ch; }
-.contact-details{ display:flex; flex-direction:column; gap:.65rem; text-align:right; }
+.contact-details{ display:flex; flex-direction:column; gap:.65rem; text-align:left; }
 .contact-details .name{ color:var(--chrome-100); font-weight:700; letter-spacing:.02em; }
 .contact-details .role{ font-size:.8125rem; letter-spacing:.1em; text-transform:uppercase; color:var(--chrome-700); }
 .contact-details a{ color:var(--chrome-300); transition:color .2s; }
 .contact-details a:hover{ color:var(--chrome-100); }
-.contact-cta{ margin-top:var(--sp-2); }
+.contact-cta{ margin-top:var(--sp-2); align-self:flex-start; }
 
 /* ============ footer ============ */
 .site-footer{ border-top:1px solid var(--line); padding-block:var(--sp-5); }
@@ -499,13 +658,15 @@ h1,h2,.section-title{
   .services-grid{ grid-template-columns:repeat(2,1fr); }
   .work-grid{ grid-template-columns:repeat(2,1fr); }
   .process-list{ grid-template-columns:repeat(2,1fr); }
+  .why-grid{ grid-template-columns:repeat(2,1fr); }
   .studio-grid{ grid-template-columns:1fr; }
   .studio-portrait{ order:-1; max-width:22rem; }
-  .contact-card{ grid-template-columns:1fr; text-align:left; }
-  .contact-details{ text-align:left; }
+  .contact-layout{ grid-template-columns:1fr; }
+  .contact-card{ order:-1; }
 }
 @media (max-width:640px){
-  .services-grid, .work-grid, .process-list{ grid-template-columns:1fr; }
+  .services-grid, .work-grid, .process-list, .why-grid{ grid-template-columns:1fr; }
+  .form-row-split{ grid-template-columns:1fr; }
   .section{ padding-block:var(--sp-6); }
   .hero-sequence{ height:340vh; }
 }
@@ -526,7 +687,7 @@ h1,h2,.section-title{
 
 <header class="site-header" id="siteHeader">
   <div class="wrap header-inner">
-    <a class="brand" href="#hero" aria-label="Silver Line Studios — home">
+    <a class="brand" href="#hero" aria-label="Silver Line Studios, home">
       <span class="brand-mark" aria-hidden="true"><span></span><span></span></span>
       <span class="brand-word chrome-text">SILVER LINE <em>STUDIOS</em></span>
     </a>
@@ -535,6 +696,7 @@ h1,h2,.section-title{
         <li><a href="#work">Work</a></li>
         <li><a href="#services">Services</a></li>
         <li><a href="#studio">Studio</a></li>
+        <li><a href="#faq">FAQ</a></li>
         <li><a href="#contact">Contact</a></li>
       </ul>
     </nav>
@@ -550,6 +712,7 @@ h1,h2,.section-title{
     <li><a href="#work">Work</a></li>
     <li><a href="#services">Services</a></li>
     <li><a href="#studio">Studio</a></li>
+    <li><a href="#faq">FAQ</a></li>
     <li><a href="#contact">Contact</a></li>
   </ul>
   <a class="btn btn-solid" href="#contact">Start a Project</a>
@@ -564,10 +727,15 @@ h1,h2,.section-title{
         <div class="smoke s2"></div>
         <div class="smoke s3"></div>
         <div class="diamond-motif" id="diamondMotif"></div>
+        <svg class="hero-frame-draw" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+          <rect x="2.5" y="2.5" width="95" height="95" pathLength="100" id="heroFrameRect"/>
+        </svg>
+        <div class="light-sweep" id="lightSweep"></div>
+        <div class="particle-field" id="heroParticles"></div>
       </div>
 
       <div class="hero-content" id="heroContent">
-        <p class="eyebrow">Film &amp; Video Production — Calgary, Alberta</p>
+        <p class="eyebrow">Film &amp; Video Production, Calgary, Alberta</p>
         <h1 class="hero-title chrome-text">EVERY FRAME<br>EARNS ITS PLACE.</h1>
         <p class="hero-sub">Silver Line Studios is a Calgary-based production house crafting cinematic brand films, commercials, and visual content for companies who refuse to look ordinary.</p>
         <div class="hero-ctas">
@@ -584,6 +752,8 @@ h1,h2,.section-title{
         <span class="hud-item hud-tc" id="hudTimecode">00:00:00:00</span>
         <span class="hud-rec"><i></i>REC</span>
       </div>
+
+      <p class="chapter-caption" id="chapterCaption" aria-hidden="true">SHOT.&nbsp; GRADED.&nbsp; DELIVERED.</p>
 
       <div class="whiteout" id="whiteout" aria-hidden="true"></div>
 
@@ -602,6 +772,7 @@ h1,h2,.section-title{
 
   <section class="section" id="services" data-reveal aria-labelledby="services-title">
     <div class="wrap">
+      <div class="particle-field" aria-hidden="true"></div>
       <div class="section-head">
         <p class="eyebrow">What We Do</p>
         <h2 class="section-title" id="services-title">Full-service production,<br>start to finish.</h2>
@@ -626,7 +797,7 @@ h1,h2,.section-title{
           <span class="service-num">03</span>
           <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="16" cy="16" r="7"/><circle cx="16" cy="16" r="2.5"/><path d="M9 9l-3-3M23 9l3-3M9 23l-3 3M23 23l3 3"/></svg>
           <h3>Cinematography</h3>
-          <p>Camera work built on light, movement, and composition — shot to cut.</p>
+          <p>Camera work built on light, movement, and composition. Shot to cut.</p>
         </div>
 
         <div class="service-card">
@@ -654,6 +825,31 @@ h1,h2,.section-title{
     </div>
   </section>
 
+  <section class="section grade-section" id="grade" data-reveal aria-labelledby="grade-title">
+    <div class="wrap">
+      <div class="particle-field" aria-hidden="true"></div>
+      <div class="section-head">
+        <p class="eyebrow">Post-Production &amp; Color</p>
+        <h2 class="section-title" id="grade-title">The same shot.<br>Two different films.</h2>
+        <p class="lede">Drag the line. This is the difference a grade makes, the same frame before the color work and after it.</p>
+      </div>
+      <div class="grade-compare bracket-frame" id="gradeCompare">
+        <i></i><i></i><i></i><i></i>
+        <div class="grade-panel grade-raw" aria-hidden="true">
+          <span class="grade-tag">RAW</span>
+        </div>
+        <div class="grade-panel grade-graded" id="gradeGraded" aria-hidden="true">
+          <span class="grade-tag">GRADED</span>
+        </div>
+        <div class="grade-handle" id="gradeHandle" tabindex="0" role="slider"
+             aria-label="Drag to compare the raw shot with the graded shot"
+             aria-valuemin="0" aria-valuemax="100" aria-valuenow="50">
+          <span class="grade-handle-grip"><i></i><i></i><i></i></span>
+        </div>
+      </div>
+    </div>
+  </section>
+
   <section class="section" id="work" data-reveal aria-labelledby="work-title">
     <div class="wrap">
       <div class="section-head wide">
@@ -661,12 +857,12 @@ h1,h2,.section-title{
         <h2 class="section-title" id="work-title">A few frames from the archive.</h2>
       </div>
       <div class="work-grid">
-        <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel — Add Footage</span></div></div>
-        <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel — Add Footage</span></div></div>
-        <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel — Add Footage</span></div></div>
-        <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel — Add Footage</span></div></div>
-        <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel — Add Footage</span></div></div>
-        <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel — Add Footage</span></div></div>
+        <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel. Footage Coming Soon.</span></div></div>
+        <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel. Footage Coming Soon.</span></div></div>
+        <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel. Footage Coming Soon.</span></div></div>
+        <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel. Footage Coming Soon.</span></div></div>
+        <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel. Footage Coming Soon.</span></div></div>
+        <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel. Footage Coming Soon.</span></div></div>
       </div>
       <p class="work-note">Full reel and case studies coming soon.</p>
     </div>
@@ -680,9 +876,43 @@ h1,h2,.section-title{
       </div>
       <div class="process-list">
         <div class="process-item"><span class="process-num">01</span><h3>Concept &amp; Prep</h3><p>Strategy, scripting, storyboards, and a shot list built around your goal.</p></div>
-        <div class="process-item"><span class="process-num">02</span><h3>Production</h3><p>On-set execution — camera, lighting, sound, and direction, dialed in.</p></div>
+        <div class="process-item"><span class="process-num">02</span><h3>Production</h3><p>On-set execution: camera, lighting, sound, and direction, all dialed in.</p></div>
         <div class="process-item"><span class="process-num">03</span><h3>Post-Production</h3><p>Edit, color grade, sound design, and motion graphics.</p></div>
         <div class="process-item"><span class="process-num">04</span><h3>Delivery</h3><p>Final files, formatted and ready for every platform you need.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section why-section" id="why" data-reveal aria-labelledby="why-title">
+    <div class="wrap">
+      <div class="section-head">
+        <p class="eyebrow">Why Calgary Brands Start Here</p>
+        <h2 class="section-title" id="why-title">Small studio.<br>No hand-offs.</h2>
+      </div>
+      <div class="why-grid">
+        <svg class="why-connector" viewBox="0 0 100 4" preserveAspectRatio="none" aria-hidden="true">
+          <line x1="0" y1="2" x2="100" y2="2" pathLength="100"/>
+        </svg>
+        <div class="why-chip">
+          <span class="why-num">01</span>
+          <h3>Founder-led</h3>
+          <p>Nicolas is on every call and every set. No account manager standing between you and the person making the film.</p>
+        </div>
+        <div class="why-chip">
+          <span class="why-num">02</span>
+          <h3>One team, start to finish</h3>
+          <p>Shooting, editing, and color grading all happen in-house. No hand-offs between crews and no notes lost along the way.</p>
+        </div>
+        <div class="why-chip">
+          <span class="why-num">03</span>
+          <h3>A limited roster</h3>
+          <p>Only a few projects run at a time, so yours gets a director's level of attention instead of a slot in a queue.</p>
+        </div>
+        <div class="why-chip">
+          <span class="why-num">04</span>
+          <h3>Your footage, your files</h3>
+          <p>Final deliverables and raw footage are handed over when a project wraps. It is your story, so it stays yours.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -694,11 +924,65 @@ h1,h2,.section-title{
           <p class="eyebrow">The Studio</p>
           <h2 class="section-title" id="studio-title" style="margin-block:1rem 1.5rem;">Founder-led.<br>Calgary-built.</h2>
           <p>Silver Line Studios is an independent production studio based in Calgary, Alberta, founded by Nicolas Rufiange.</p>
-          <p>We take on a limited number of projects at a time so every one gets a director's level of attention — from first concept to final color.</p>
+          <p>We take on a limited number of projects at a time so every one gets a director's level of attention, from first concept to final color.</p>
         </div>
         <div class="studio-portrait bracket-frame">
           <i></i><i></i><i></i><i></i>
-          <div class="studio-portrait-label">Founder Portrait<br>— Coming Soon</div>
+          <div class="studio-portrait-label">Founder Portrait<br>Coming Soon</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section faq-section" id="faq" data-reveal aria-labelledby="faq-title">
+    <div class="wrap">
+      <div class="particle-field" aria-hidden="true"></div>
+      <div class="section-head">
+        <p class="eyebrow">Common Questions</p>
+        <h2 class="section-title" id="faq-title">Before you reach out.</h2>
+      </div>
+      <div class="faq-list">
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">
+            <span>How long does a project take?</span>
+            <span class="faq-icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-a"><p>Most commercial and brand films run four to six weeks from the first call to final delivery. Smaller projects move faster, and bigger ones get an honest timeline once the scope is clear.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">
+            <span>What does a project cost?</span>
+            <span class="faq-icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-a"><p>Every project gets scoped and quoted after a short call, since a fifteen second product cutdown and a full brand documentary cost very different things. Reach out with your goals and you will get a straight number.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">
+            <span>Do you shoot outside Calgary?</span>
+            <span class="faq-icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-a"><p>Yes. Alberta-wide and beyond for the right project. Travel gets scoped into the quote up front, so there are no surprises later.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">
+            <span>We don't have a script yet. Is that a problem?</span>
+            <span class="faq-icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-a"><p>Not at all. Concept and scripting are part of the process. Come with the goal for the film, and we will help build the plan from there.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">
+            <span>Who owns the footage once the project wraps?</span>
+            <span class="faq-icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-a"><p>You do. Final files and raw footage are handed over at delivery, so the archive is yours to keep and reuse.</p></div>
+        </div>
+        <div class="faq-item">
+          <button class="faq-q" aria-expanded="false">
+            <span>How many rounds of revisions are included?</span>
+            <span class="faq-icon" aria-hidden="true"></span>
+          </button>
+          <div class="faq-a"><p>Two rounds of revisions are built into every project scope, with more available if a project needs them.</p></div>
         </div>
       </div>
     </div>
@@ -706,17 +990,61 @@ h1,h2,.section-title{
 
   <section class="section contact-section" id="contact" data-reveal aria-labelledby="contact-title">
     <div class="wrap">
-      <p class="eyebrow" style="margin-bottom:1.5rem;">Get In Touch</p>
-      <div class="contact-card bracket-frame">
-        <i></i><i></i><i></i><i></i>
-        <h2 class="contact-headline chrome-text" id="contact-title">Let's make<br>something.</h2>
-        <div class="contact-details">
-          <span class="name">Nicolas Rufiange</span>
-          <span class="role">Founder &amp; Creative Director</span>
-          <a href="tel:+14038046191">403.804.6191</a>
-          <a href="mailto:silverlineproductions.ca@gmail.com">silverlineproductions.ca@gmail.com</a>
-          <span>Calgary, Alberta</span>
-          <a class="btn btn-solid contact-cta" href="mailto:silverlineproductions.ca@gmail.com">Email the Studio</a>
+      <div class="section-head">
+        <p class="eyebrow">Get In Touch</p>
+        <h2 class="section-title chrome-text" id="contact-title">Let's make<br>something.</h2>
+        <p class="lede">Send the brief below. It opens your email app with everything filled in and addressed straight to the studio, nothing is collected on this page.</p>
+      </div>
+      <div class="contact-layout">
+        <form class="inquiry-form" id="inquiryForm" novalidate>
+          <div class="form-row">
+            <label for="fName">Name</label>
+            <input type="text" id="fName" name="name" required autocomplete="name">
+          </div>
+          <div class="form-row">
+            <label for="fEmail">Email</label>
+            <input type="email" id="fEmail" name="email" required autocomplete="email">
+          </div>
+          <div class="form-row form-row-split">
+            <div>
+              <label for="fType">Project type</label>
+              <select id="fType" name="type">
+                <option>Commercial Film</option>
+                <option>Brand Film</option>
+                <option>Aerial &amp; Drone</option>
+                <option>Corporate &amp; Events</option>
+                <option>Something else</option>
+              </select>
+            </div>
+            <div>
+              <label for="fBudget">Budget range (optional)</label>
+              <select id="fBudget" name="budget">
+                <option value="">Prefer not to say</option>
+                <option>Under $5,000</option>
+                <option>$5,000 to $15,000</option>
+                <option>$15,000 to $30,000</option>
+                <option>$30,000 and up</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-row">
+            <label for="fMessage">Tell us about the project</label>
+            <textarea id="fMessage" name="message" rows="4" required></textarea>
+          </div>
+          <button class="btn btn-solid" type="submit">Send the Brief</button>
+          <p class="form-note" id="formNote">This opens your email app, addressed to the studio. Nothing is sent from this page.</p>
+        </form>
+
+        <div class="contact-card bracket-frame">
+          <i></i><i></i><i></i><i></i>
+          <div class="contact-details">
+            <span class="name">Nicolas Rufiange</span>
+            <span class="role">Founder &amp; Creative Director</span>
+            <a href="tel:+14038046191">403.804.6191</a>
+            <a href="mailto:silverlineproductions.ca@gmail.com">silverlineproductions.ca@gmail.com</a>
+            <span>Calgary, Alberta</span>
+            <a class="btn btn-ghost contact-cta" href="mailto:silverlineproductions.ca@gmail.com">Email Directly</a>
+          </div>
         </div>
       </div>
     </div>
@@ -734,6 +1062,7 @@ h1,h2,.section-title{
       <a href="#work">Work</a>
       <a href="#services">Services</a>
       <a href="#studio">Studio</a>
+      <a href="#faq">FAQ</a>
       <a href="#contact">Contact</a>
     </nav>
     <p class="footer-meta">&copy; <span id="year"></span> Silver Line Studios. Calgary, Alberta.</p>
@@ -780,8 +1109,12 @@ h1,h2,.section-title{
       if (el && el.parentNode) el.parentNode.removeChild(el);
     }
   });
-  preTl.to('.preloader-mark span', { scale:1, rotation:225, duration:.9, ease:'power3.out' })
-       .to('.preloader', { autoAlpha:0, duration:.5, ease:'power1.out' }, '+=.15');
+  if (reduceMotion){
+    preTl.to('.preloader', { autoAlpha:0, duration:.25 });
+  } else {
+    preTl.to('.preloader-mark span', { scale:1, rotation:225, duration:.9, ease:'power3.out' })
+         .to('.preloader', { autoAlpha:0, duration:.5, ease:'power1.out' }, '+=.15');
+  }
 
   /* ---------- header scroll state ---------- */
   var header = document.getElementById('siteHeader');
@@ -824,6 +1157,30 @@ h1,h2,.section-title{
     ring.style.opacity = opacity.toFixed(3);
     motif.appendChild(ring);
   }
+
+  /* ---------- whisper-level particle fields ---------- */
+  function seedParticles(container, count, sizeMin, sizeMax){
+    if (!container || reduceMotion) return;
+    var frag = document.createDocumentFragment();
+    for (var i = 0; i < count; i++){
+      var p = document.createElement('span');
+      p.className = 'particle';
+      var size = sizeMin + Math.random() * (sizeMax - sizeMin);
+      p.style.width = size + 'px';
+      p.style.height = size + 'px';
+      p.style.left = (Math.random() * 100) + '%';
+      p.style.top = (Math.random() * 100) + '%';
+      p.style.setProperty('--p-op', (.15 + Math.random() * .3).toFixed(2));
+      p.style.animationDuration = (14 + Math.random() * 16) + 's';
+      p.style.animationDelay = (-Math.random() * 20) + 's';
+      frag.appendChild(p);
+    }
+    container.appendChild(frag);
+  }
+  seedParticles(document.getElementById('heroParticles'), 22, 1, 3);
+  document.querySelectorAll('.section .particle-field').forEach(function(field){
+    seedParticles(field, 10, 1, 2.5);
+  });
 
   /* ---------- lens canvas (camera iris) ---------- */
   var canvas = document.getElementById('lensCanvas');
@@ -908,8 +1265,8 @@ h1,h2,.section-title{
     isFull: '(prefers-reduced-motion: no-preference)'
   }, function(context){
     if (context.conditions.isReduced){
-      gsap.set('.lens-canvas, .hud, .whiteout', { autoAlpha:0 });
-      gsap.set('.statement', { autoAlpha:1, y:0 });
+      gsap.set('.lens-canvas, .hud, .whiteout, .hero-frame-draw, .light-sweep, .chapter-caption, .statement, #diamondMotif', { autoAlpha:0 });
+      gsap.set('#heroContent', { autoAlpha:1, y:0, scale:1 });
       return;
     }
 
@@ -930,11 +1287,17 @@ h1,h2,.section-title{
       }
     });
 
-    tl.to('#heroContent', { autoAlpha:0, y:-50, scale:.94, duration:.22 }, 0)
+    tl.fromTo('#heroFrameRect', { strokeDashoffset:100 }, { strokeDashoffset:0, duration:.16 }, 0)
+      .to('#heroContent', { autoAlpha:0, y:-50, scale:.94, duration:.22 }, 0)
       .to('#diamondMotif', { autoAlpha:0, duration:.2 }, 0)
+      .to('.hero-frame-draw', { autoAlpha:0, duration:.1 }, .2)
       .set('.lens-canvas', { autoAlpha:1 }, .1)
       .set('.hud', { autoAlpha:1 }, .12)
       .to('.lens-canvas', { scale:52, duration:.56, ease:'power1.in' }, .18)
+      .fromTo('.light-sweep', { xPercent:-30, autoAlpha:0 }, { xPercent:30, autoAlpha:1, duration:.46, ease:'sine.inOut' }, .18)
+      .to('.light-sweep', { autoAlpha:0, duration:.08 }, .62)
+      .fromTo('#chapterCaption', { autoAlpha:0, y:14 }, { autoAlpha:1, y:0, duration:.1 }, .32)
+      .to('#chapterCaption', { autoAlpha:0, y:-14, duration:.1 }, .54)
       .to('.hud', { autoAlpha:0, duration:.06 }, .68)
       .to('#whiteout', { autoAlpha:1, duration:.08 }, .7)
       .to('#whiteout', { autoAlpha:0, duration:.1 }, .8)
@@ -942,16 +1305,167 @@ h1,h2,.section-title{
       .fromTo('#statement', { autoAlpha:0, y:26 }, { autoAlpha:1, y:0, duration:.18 }, .82);
   });
 
-  /* ---------- generic scroll reveal ---------- */
+  /* ---------- grade compare slider ---------- */
+  (function(){
+    var compare = document.getElementById('gradeCompare');
+    var graded = document.getElementById('gradeGraded');
+    var handle = document.getElementById('gradeHandle');
+    if (!compare || !graded || !handle) return;
+    var dragging = false;
+
+    function setPos(pct){
+      pct = Math.max(0, Math.min(100, pct));
+      graded.style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)';
+      handle.style.left = pct + '%';
+      handle.setAttribute('aria-valuenow', Math.round(pct));
+    }
+    function pctFromClientX(clientX){
+      var rect = compare.getBoundingClientRect();
+      return ((clientX - rect.left) / rect.width) * 100;
+    }
+
+    compare.addEventListener('pointerdown', function(e){
+      dragging = true;
+      compare.setPointerCapture(e.pointerId);
+      setPos(pctFromClientX(e.clientX));
+    });
+    compare.addEventListener('pointermove', function(e){
+      if (!dragging) return;
+      setPos(pctFromClientX(e.clientX));
+    });
+    ['pointerup','pointercancel','pointerleave'].forEach(function(evt){
+      compare.addEventListener(evt, function(){ dragging = false; });
+    });
+    handle.addEventListener('keydown', function(e){
+      var current = parseFloat(handle.getAttribute('aria-valuenow')) || 50;
+      if (e.key === 'ArrowLeft'){ setPos(current - 5); e.preventDefault(); }
+      else if (e.key === 'ArrowRight'){ setPos(current + 5); e.preventDefault(); }
+      else if (e.key === 'Home'){ setPos(0); e.preventDefault(); }
+      else if (e.key === 'End'){ setPos(100); e.preventDefault(); }
+    });
+
+    setPos(50);
+  })();
+
+  /* ---------- inquiry form (mailto) ---------- */
+  var inquiryForm = document.getElementById('inquiryForm');
+  if (inquiryForm){
+    var formNote = document.getElementById('formNote');
+    var STUDIO_EMAIL = 'silverlineproductions.ca@gmail.com';
+    inquiryForm.querySelectorAll('input, textarea').forEach(function(field){
+      field.addEventListener('input', function(){ field.classList.remove('is-invalid'); });
+    });
+    inquiryForm.addEventListener('submit', function(e){
+      e.preventDefault();
+      if (!inquiryForm.checkValidity()){
+        inquiryForm.querySelectorAll(':invalid').forEach(function(field){ field.classList.add('is-invalid'); });
+        inquiryForm.reportValidity();
+        return;
+      }
+      var name = inquiryForm.name.value.trim();
+      var email = inquiryForm.email.value.trim();
+      var type = inquiryForm.type.value;
+      var budget = inquiryForm.budget.value;
+      var message = inquiryForm.message.value.trim();
+
+      var subject = 'New project inquiry: ' + type;
+      var bodyLines = [
+        'Name: ' + name,
+        'Email: ' + email,
+        'Project type: ' + type,
+        'Budget range: ' + (budget || 'Not specified'),
+        '',
+        message
+      ];
+      var mailto = 'mailto:' + STUDIO_EMAIL
+        + '?subject=' + encodeURIComponent(subject)
+        + '&body=' + encodeURIComponent(bodyLines.join('\n'));
+
+      window.location.href = mailto;
+      formNote.textContent = 'Opening your email app now, addressed to the studio with your brief filled in.';
+      formNote.classList.add('is-success');
+    });
+  }
+
+  /* ---------- faq accordion ---------- */
+  document.querySelectorAll('.faq-item').forEach(function(item){
+    var btn = item.querySelector('.faq-q');
+    btn.addEventListener('click', function(){
+      var wasOpen = item.classList.contains('is-open');
+      document.querySelectorAll('.faq-item.is-open').forEach(function(open){
+        open.classList.remove('is-open');
+        open.querySelector('.faq-q').setAttribute('aria-expanded', 'false');
+      });
+      if (!wasOpen){
+        item.classList.add('is-open');
+        btn.setAttribute('aria-expanded', 'true');
+      }
+    });
+  });
+
+  /* ---------- card tilt (mouse-driven, fine pointers only) ---------- */
+  if (!reduceMotion && window.matchMedia('(hover:hover) and (pointer:fine)').matches){
+    document.querySelectorAll('.service-card, .work-tile').forEach(function(card){
+      card.addEventListener('pointermove', function(e){
+        var r = card.getBoundingClientRect();
+        var px = (e.clientX - r.left) / r.width - .5;
+        var py = (e.clientY - r.top) / r.height - .5;
+        gsap.to(card, { rotateX: py * -5, rotateY: px * 5, duration:.5, ease:'power2.out', transformPerspective:700 });
+      });
+      card.addEventListener('pointerleave', function(){
+        gsap.to(card, { rotateX:0, rotateY:0, duration:.6, ease:'power3.out' });
+      });
+    });
+  }
+
+  /* ---------- grade compare: focus-pull entrance ---------- */
+  var gradeEl = document.querySelector('.grade-compare');
+  if (gradeEl){
+    if (reduceMotion){
+      gsap.set(gradeEl, { autoAlpha:1, scale:1, filter:'blur(0px)' });
+    } else {
+      gsap.set(gradeEl, { autoAlpha:0, scale:.96, filter:'blur(14px)' });
+      ScrollTrigger.create({
+        trigger: gradeEl,
+        start:'top 80%',
+        once:true,
+        onEnter: function(){
+          gsap.to(gradeEl, { autoAlpha:1, scale:1, filter:'blur(0px)', duration:1, ease:'power2.out' });
+        }
+      });
+    }
+  }
+
+  /* ---------- why-us connector line draw ---------- */
+  var whyLine = document.querySelector('.why-connector line');
+  if (whyLine){
+    if (reduceMotion){
+      whyLine.style.strokeDashoffset = 0;
+    } else {
+      ScrollTrigger.create({
+        trigger: '.why-grid',
+        start: 'top 75%',
+        once: true,
+        onEnter: function(){
+          gsap.to(whyLine, { strokeDashoffset:0, duration:1.1, ease:'power2.out' });
+        }
+      });
+    }
+  }
+
+  /* ---------- generic scroll reveal (per-item, with a side-entrance for chips/faq) ---------- */
   if (!reduceMotion){
     gsap.utils.toArray('[data-reveal]').forEach(function(section){
-      var targets = section.querySelectorAll('.section-head, .services-grid, .work-grid, .process-list, .studio-grid, .contact-card');
-      gsap.set(targets, { autoAlpha:0, y:28 });
+      var targets = section.querySelectorAll('.section-head, .service-card, .work-tile, .process-item, .why-chip, .studio-grid, .faq-item, .contact-card, .inquiry-form');
+      targets.forEach(function(el, i){
+        var sideEntrance = el.classList.contains('why-chip') || el.classList.contains('faq-item');
+        gsap.set(el, { autoAlpha:0, y:28, x: sideEntrance ? (i % 2 === 0 ? -16 : 16) : 0 });
+      });
       ScrollTrigger.create({
         trigger: section,
         start:'top 78%',
         onEnter: function(){
-          gsap.to(targets, { autoAlpha:1, y:0, duration:.8, ease:'power2.out', stagger:.08 });
+          gsap.to(targets, { autoAlpha:1, y:0, x:0, duration:.8, ease:'power2.out', stagger:.08 });
         },
         once:true
       });

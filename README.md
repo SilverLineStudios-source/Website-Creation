@@ -9,6 +9,27 @@ scroll-driven camera-iris zoom as the signature hero transition (GSAP + ScrollTr
 standalone in any browser with no build step and no external requests. Reel/portrait imagery is placeholder
 pending real photography or footage.
 
+Beyond the hero, the page carries cinematic motion and conversion structure the whole way down: a
+signature self-drawing viewfinder frame and light sweep mid-scrub, whisper-level drifting particles,
+an interactive drag-to-compare raw-vs-graded panel demonstrating the color grading service, a
+differentiators section, an FAQ accordion (draft policy answers, marked in the source for Nicolas to
+confirm), and a project-brief form that composes a `mailto:` submission with clear on-page disclosure
+of where it goes. Copy has been run through a plain-language pass (no em dashes, no corporate
+stock phrasing) and the build was smoke-tested with a headless-browser pass (desktop, mobile, and
+reduced-motion viewports; console/page errors checked).
+
+## 10K Websites skill
+
+This repo also includes the `10k-websites` skill under `.claude/skills/10k-websites/`, the workflow used
+to plan the upgrades above: a cinematic scroll-driven site built from one AI-generated hero video plus a
+real page below it, with its own setup wizard (Higgsfield for image/video generation, Hostinger for
+hosting), design phases, and quality gates. This copy was installed from the SKILL.md text handed over in
+chat, so its `references/` files (the detailed video-prompt laws, the scrub-hero engineering spec, ffmpeg
+recipes, and the Hostinger deploy flow) are not bundled yet, only their summaries inside SKILL.md. Drop the
+real `references/` zip into that folder to unlock the full detail, including the actual AI hero-video
+generation and one-command hosting deploy, neither of which this environment had the Higgsfield or
+Hostinger connectors to run.
+
 ## UI/UX Pro Max skill
 
 This repo includes the [UI/UX Pro Max](https://github.com/nextlevelbuilder/ui-ux-pro-max-skill) design

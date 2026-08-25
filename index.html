@@ -361,15 +361,13 @@ h1,h2,.section-title{
   gap:var(--sp-3);
   padding-block:1.1rem;
 }
-.brand{ display:flex; align-items:center; gap:.75rem; }
-.brand-mark{ width:26px; height:26px; position:relative; flex:none; }
-.brand-mark span{
-  position:absolute; inset:0; margin:auto;
-  border:1.5px solid var(--chrome-300);
-  transform:rotate(45deg);
+.brand{ display:flex; align-items:center; gap:.7rem; }
+/* the real SL monogram. It is cut from dark key art, so `screen` drops its
+   black ground and leaves only the polished letterforms. */
+.brand-mark{
+  width:auto; height:34px; flex:none;
 }
-.brand-mark span:nth-child(1){ width:26px; height:26px; }
-.brand-mark span:nth-child(2){ width:13px; height:13px; border-color:var(--green-500); }
+.brand-mark.is-small{ height:22px; }
 .brand-word{
   font-family:var(--font-display);
   font-weight:500;
@@ -470,13 +468,9 @@ h1,h2,.section-title{
   display:flex; flex-direction:column; align-items:center;
   text-align:center; padding-inline:1.25rem; will-change:transform,opacity;
 }
-/* the SL mark, set live in the display serif rather than shipped as pixels */
 .hero-monogram{
-  font-family:var(--font-display); font-weight:500;
-  font-size:clamp(1.9rem,1.5rem + 1.5vw,2.6rem);
-  line-height:1; letter-spacing:-.06em;
+  width:auto; height:clamp(2.6rem,2.1rem + 1.6vw,3.6rem);
 }
-.hero-monogram em{ font-style:normal; margin-left:-.06em; }
 
 .hero-kicker{
   font-family:var(--font-body);
@@ -492,6 +486,16 @@ h1,h2,.section-title{
 @media (max-width:560px){
   .hero-kicker{ letter-spacing:.2em; font-size:.66rem; }
 }
+/* the diamond wordmark is a different shape, so it takes its own mask */
+@media (max-width:700px){
+  .hero-lockup{ width:min(98vw,560px,60vh); }
+  .hero-lockup img{
+    -webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 50%, #000 56%, transparent 100%);
+    mask-image:radial-gradient(ellipse 60% 70% at 50% 50%, #000 56%, transparent 100%);
+  }
+  /* the reference runs the mark on its own in the header on phones */
+  .brand-word{ display:none; }
+}
 /* a 7-column calendar needs its cells to shrink on a phone */
 @media (max-width:560px){
   .booking-cal{ padding:var(--sp-2); }
@@ -503,7 +507,9 @@ h1,h2,.section-title{
 /* the brand's own key art carries the hero */
 .hero-lockup{
   margin-top:clamp(.5rem,1.6vh,1.4rem);
-  width:min(86vw,760px);
+  /* the vh cap matters: on a laptop-height window the stack would otherwise
+     run past the viewport and collide with the scroll cue */
+  width:min(86vw,760px,72vh);
   will-change:transform,filter,opacity;
 }
 .hero-lockup img{
@@ -536,6 +542,10 @@ h1,h2,.section-title{
   animation:cueDrop 2.2s ease-in-out infinite;
 }
 @keyframes cueDrop{ to{ top:100%; } }
+/* a short window has no room for the cue under the call-to-action buttons */
+@media (max-height:820px){
+  .scroll-cue{ display:none; }
+}
 
 .lens-canvas{
   position:absolute; z-index:3; inset:0; margin:auto;
@@ -914,11 +924,15 @@ h1,h2,.section-title{
   position:fixed; inset:0; z-index:1000; background:var(--ink);
   display:flex; align-items:center; justify-content:center;
 }
-.preloader-mark{ width:64px; height:64px; position:relative; }
+.preloader-mark{ width:96px; height:96px; position:relative; display:flex; align-items:center; justify-content:center; }
 .preloader-mark span{
-  position:absolute; inset:0; margin:auto; transform:rotate(45deg) scale(0);
+  position:absolute; inset:0; margin:auto; width:96px; height:96px;
+  transform:rotate(45deg) scale(0);
   border:1.5px solid var(--chrome-300);
   box-shadow:0 0 24px rgba(20,155,87,.45), inset 0 0 14px rgba(20,155,87,.25);
+}
+.preloader-mark img{
+  position:relative; width:auto; height:40px; opacity:0;
 }
 
 /* ============ responsive ============ */
@@ -957,14 +971,17 @@ h1,h2,.section-title{
 <div class="grain" aria-hidden="true"></div>
 
 <div class="preloader" id="preloader" aria-hidden="true">
-  <div class="preloader-mark"><span></span></div>
+  <div class="preloader-mark">
+    <span></span>
+    <img src="assets/sl-mark.png" width="216" height="180" alt="" decoding="async">
+  </div>
 </div>
 
 <header class="site-header" id="siteHeader">
   <div class="wrap header-inner">
     <a class="brand" href="#hero" aria-label="Silver Line Studios, home">
-      <span class="brand-mark" aria-hidden="true"><span></span><span></span></span>
-      <span class="brand-word chrome-text">SILVER LINE <em>STUDIOS</em></span>
+      <img class="brand-mark" src="assets/sl-mark.png" width="216" height="180" alt="" aria-hidden="true" decoding="async">
+      <span class="brand-word chrome-text">Silver Line <em>Studios</em></span>
     </a>
     <nav class="main-nav" aria-label="Primary">
       <ul>
@@ -1012,10 +1029,15 @@ h1,h2,.section-title{
       </div>
 
       <div class="hero-content" id="heroContent">
-        <span class="hero-monogram chrome-text" aria-hidden="true">S<em>L</em></span>
+        <img class="hero-monogram" src="assets/sl-mark.png" width="216" height="180" alt="" aria-hidden="true" fetchpriority="high" decoding="async">
         <p class="hero-kicker chrome-text">Every story holds a silver lining.</p>
         <h1 class="hero-lockup">
-          <img src="assets/lens.jpg" width="810" height="480" alt="Silver Line Studios" fetchpriority="high" decoding="async">
+          <picture>
+            <!-- the brand runs the diamond wordmark on phones and the lens
+                 lockup on wider screens; only one file is ever fetched -->
+            <source media="(max-width:700px)" srcset="assets/diamond.jpg" width="1140" height="660">
+            <img src="assets/lens.jpg" width="810" height="480" alt="Silver Line Studios" fetchpriority="high" decoding="async">
+          </picture>
         </h1>
         <p class="hero-kicker is-green green-text">Let us tell yours.</p>
         <div class="hero-ctas">
@@ -1372,7 +1394,7 @@ h1,h2,.section-title{
 <footer class="site-footer">
   <div class="wrap footer-inner">
     <div class="footer-brand">
-      <span class="brand-mark" aria-hidden="true" style="width:16px;height:16px;"><span style="border-color:var(--chrome-600);"></span></span>
+      <img class="brand-mark is-small" src="assets/sl-mark.png" width="216" height="180" alt="" aria-hidden="true" decoding="async" loading="lazy">
       Silver Line Studios
     </div>
     <nav class="footer-nav" aria-label="Footer">
@@ -1428,10 +1450,12 @@ h1,h2,.section-title{
     }
   });
   if (reduceMotion){
+    gsap.set('.preloader-mark img', { autoAlpha:1 });
     preTl.to('.preloader', { autoAlpha:0, duration:.25 });
   } else {
     preTl.to('.preloader-mark span', { scale:1, rotation:225, duration:.9, ease:'power3.out' })
-         .to('.preloader', { autoAlpha:0, duration:.5, ease:'power1.out' }, '+=.15');
+         .to('.preloader-mark img', { autoAlpha:1, duration:.45, ease:'power2.out' }, '-=.35')
+         .to('.preloader', { autoAlpha:0, duration:.5, ease:'power1.out' }, '+=.2');
   }
 
   /* ---------- header scroll state ---------- */

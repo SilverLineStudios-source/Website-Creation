@@ -13,8 +13,13 @@ labels are widely tracked sans caps. Green marks the emotive and call-to-action 
 the functional ones.
 
 **Atmosphere**: two real smoke plates cut from the key art are anchored to the page edges as a fixed,
-slowly drifting layer, so the whole site sits in one continuous weather system. The hero centres the
-real logo lockup, masked to its own barrel and flare so it blends into that smoke.
+slowly drifting layer, so the whole site sits in one continuous weather system.
+
+**Logo**: the real SL monogram (`assets/sl-mark.png`) carries the header, footer, preloader, and hero.
+It was cut from the key art and given an alpha matte keyed off luminance, so it composites onto any
+background with no rectangle showing. The hero runs art direction across breakpoints the way the brand
+does: the diamond wordmark on phones, the circular lens lockup above 700px, each masked to its own
+geometry, with `<picture>` so only one file is ever fetched.
 
 **The hero** is scroll-driven: the lockup pushes forward under a focus pull and hands off to a
 canvas-drawn lens (vector, so it stays sharp) which opens its aperture and blows out to an emerald

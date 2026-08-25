@@ -2,21 +2,39 @@
 
 ## Site prototype
 
-`index.html` is a self-contained one-page concept build for Silver Line Studios (Calgary, AB film/video
-production). Dark monochrome chrome-on-black identity built from the studio's own logo, with a
-scroll-driven camera-iris zoom as the signature hero transition (GSAP + ScrollTrigger, respects
-`prefers-reduced-motion`). Fonts (Anton, Archivo) and GSAP are embedded inline, so the file opens
-standalone in any browser with no build step and no external requests. Reel/portrait imagery is placeholder
-pending real photography or footage.
+`index.html` is a one-page build for Silver Line Studios (Calgary, AB photography and video production),
+plus a small `assets/` folder. It opens standalone in any browser with no build step: fonts (Playfair
+Display, Archivo) and GSAP are embedded inline, and the only external files are three local images.
 
-Beyond the hero, the page carries cinematic motion and conversion structure the whole way down: a
-signature self-drawing viewfinder frame and light sweep mid-scrub, whisper-level drifting particles,
-an interactive drag-to-compare raw-vs-graded panel demonstrating the color grading service, a
-differentiators section, an FAQ accordion (draft policy answers, marked in the source for Nicolas to
-confirm), and a project-brief form that composes a `mailto:` submission with clear on-page disclosure
-of where it goes. Copy has been run through a plain-language pass (no em dashes, no corporate
-stock phrasing) and the build was smoke-tested with a headless-browser pass (desktop, mobile, and
-reduced-motion viewports; console/page errors checked).
+**Design language** is taken from the studio's own key art. The palette was sampled directly out of
+that artwork rather than guessed: a chrome-green gradient running `#c9fbdf` → `#149b57` → `#0b4a2c`,
+cool silver `#c6cad1`, on a neutral near-black. Display type is Playfair Display (high-contrast serif),
+labels are widely tracked sans caps. Green marks the emotive and call-to-action lines, chrome carries
+the functional ones.
+
+**Atmosphere**: two real smoke plates cut from the key art are anchored to the page edges as a fixed,
+slowly drifting layer, so the whole site sits in one continuous weather system. The hero centres the
+real logo lockup, masked to its own barrel and flare so it blends into that smoke.
+
+**The hero** is scroll-driven: the lockup pushes forward under a focus pull and hands off to a
+canvas-drawn lens (vector, so it stays sharp) which opens its aperture and blows out to an emerald
+flash before the page settles. Respects `prefers-reduced-motion`, which gets a clean static hero.
+
+**Below the hero**: services, an interactive drag-to-compare raw-vs-graded panel for the color work,
+selected work, process, differentiators, the studio, an FAQ accordion, a booking calendar, and a
+project-brief form. Both the calendar and the form compose `mailto:` messages and say so on the page,
+since a static site has no backend to take a real booking.
+
+Reel and portrait imagery are still placeholders pending real photography.
+
+**Needs confirming before this goes live**: the FAQ answers (timelines, revision counts, travel terms)
+are drafts, flagged with a comment in the source. The studio blurb now says "photography and video
+production ... commercial films, branded content, portraits, and event coverage", taken from the
+reference site, so check it matches what the studio actually sells.
+
+Verified with a headless-browser pass at desktop, mobile, and reduced-motion: no console errors, no
+failed requests, no horizontal overflow at 360/390/768px, and the calendar and form interactions
+exercised.
 
 ## 10K Websites skill
 

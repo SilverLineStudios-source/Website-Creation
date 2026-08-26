@@ -1694,12 +1694,25 @@ h1,h2,.section-title{
     ctx.fillStyle = grad;
     ctx.fill();
 
+    /* Two stages of light, because the barrel is only in frame for the first
+       third of the push: past about 3x it has travelled outside the viewport.
+       `glow` is the early one, and it is what makes the iris visibly open;
+       `bloom` is the late burst, held at nothing until the middle of the
+       journey is safely dark, and by then the ring is long gone from frame. */
+    var glow = Math.min(1, Math.max(0, t / 0.38));
+    var bloom = Math.pow(Math.max(0, (t - 0.55) / 0.45), 1.6);
+
     /* Aperture blades. The opening widens as the camera pushes in, so the
        rim travels past the frame and the viewer ends up inside the light.
        Closing it instead (as this once did) leaves a shrinking disc floating
-       in the middle of the screen, which reads as an orb, not a journey. */
+       in the middle of the screen, which reads as an orb, not a journey.
+
+       The travel is tied to the light rather than the push, so the iris opens
+       as the light comes up instead of the two running on separate clocks:
+       stopped down at rest, visibly widening with the early glow while the
+       barrel is still on screen, then surging with the late burst. */
     var blades = 8;
-    var openness = .42 + t * .56;
+    var openness = .34 + glow * .30 + bloom * .36;
     var innerR = (r - 44) * openness * .92;
     ctx.save();
     ctx.translate(cx, cy);
@@ -1720,15 +1733,15 @@ h1,h2,.section-title{
     }
     /* The opening. Past roughly 12x the viewport shows a single flat colour
        whatever is drawn here, so that colour has to stay dark and read as
-       depth. The bloom is therefore held at nothing until late, then ramps
-       hard and hands straight off to the whiteout. */
-    var bloom = Math.pow(Math.max(0, (t - 0.55) / 0.45), 1.6);
+       depth, which is why the bloom above is held back so long. */
     ctx.beginPath();
     ctx.arc(0, 0, innerR, 0, Math.PI * 2);
     var centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, innerR || 1);
-    centerGrad.addColorStop(0, 'rgba(236,255,246,' + (0.10 + bloom * 0.90) + ')');
-    centerGrad.addColorStop(.4, 'rgba(110,224,168,' + (0.05 + bloom * 0.70) + ')');
-    centerGrad.addColorStop(1, 'rgba(20,155,87,' + (0.02 + bloom * 0.25) + ')');
+    /* the glow term is kept small here: this fill becomes the whole viewport
+       once we are inside, and lifting it much would wash out the dark middle */
+    centerGrad.addColorStop(0, 'rgba(236,255,246,' + (0.06 + glow * 0.14 + bloom * 0.80) + ')');
+    centerGrad.addColorStop(.4, 'rgba(110,224,168,' + (0.03 + glow * 0.09 + bloom * 0.62) + ')');
+    centerGrad.addColorStop(1, 'rgba(20,155,87,' + (0.02 + glow * 0.04 + bloom * 0.22) + ')');
     ctx.fillStyle = centerGrad;
     ctx.fill();
 
@@ -1748,7 +1761,7 @@ h1,h2,.section-title{
     for (var ray = 0; ray < 12; ray++){
       var ra = (ray / 12) * TAU;
       var rg = ctx.createLinearGradient(0, 0, Math.cos(ra) * innerR, Math.sin(ra) * innerR);
-      rg.addColorStop(0, 'rgba(226,255,240,' + (0.2 + bloom * 0.34) + ')');
+      rg.addColorStop(0, 'rgba(226,255,240,' + (0.1 + glow * 0.22 + bloom * 0.3) + ')');
       rg.addColorStop(1, 'rgba(20,155,87,0)');
       ctx.strokeStyle = rg;
       ctx.lineWidth = innerR * 0.055;

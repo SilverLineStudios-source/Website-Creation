@@ -465,20 +465,36 @@ h1,h2,.section-title{
 
 .hero-kicker{
   font-family:var(--font-body);
-  font-size:clamp(.7rem,.62rem + .34vw,.95rem);
-  font-weight:500;
-  letter-spacing:.34em;
+  font-size:clamp(1.3rem,.98rem + 1.5vw,2.3rem);
+  font-weight:600;
+  letter-spacing:.13em;
+  line-height:1.4;
   text-transform:uppercase;
-  margin-top:clamp(1rem,2.4vh,1.9rem);
-  padding-left:.34em; /* optical centring against the trailing letter-space */
+  margin-top:clamp(1.1rem,2.6vh,2rem);
+  padding-left:.13em; /* optical centring against the trailing letter-space */
 }
-.hero-kicker.is-green{ margin-top:clamp(.9rem,2.2vh,1.7rem); }
-/* wide tracking runs out of room on a phone before the type does */
+.hero-kicker.is-green{ margin-top:clamp(1rem,2.4vh,1.8rem); }
+
+/* Struck emerald: the same specular band a chrome ramp uses, in the brand's
+   green, so it reads as metal rather than flat colour.
+   background-image, not the background shorthand: the shorthand resets
+   background-clip to border-box, and at this higher specificity that beats
+   the clip:text these inherit, painting the gradient as a solid bar. */
+.hero-kicker.chrome-text,
+.hero-kicker.is-green.green-text{
+  background-image:linear-gradient(180deg,
+    #eafff5 0%,
+    #7ff0bc 22%,
+    #23b06b 46%,
+    #ffffff 55%,
+    #17945a 74%,
+    #86ecbb 100%);
+  text-shadow:0 2px 16px rgba(0,0,0,.6), 0 0 30px rgba(61,220,144,.28);
+}
 @media (max-width:560px){
-  .hero-kicker{ letter-spacing:.2em; font-size:.66rem; }
+  .hero-kicker{ letter-spacing:.1em; padding-left:.1em; }
 }
 @media (max-width:700px){
-  .hero-lockup{ width:min(92vw,520px,56vh); }
   /* the reference runs the mark on its own in the header on phones */
   .brand-word{ display:none; }
 }
@@ -497,6 +513,12 @@ h1,h2,.section-title{
      run past the viewport and collide with the scroll cue */
   width:min(86vw,760px,72vh);
   will-change:transform,filter,opacity;
+}
+/* Every width override lives below the base rule, not above it. Media queries
+   add no specificity, so an override written earlier in the file silently
+   loses to the base declaration and does nothing at all. */
+@media (max-width:700px){
+  .hero-lockup{ width:min(84vw,480px,52vh); }
 }
 .hero-lockup img{ width:100%; height:auto; }
 /* Scoped to the breakpoint that actually serves the lens plate. Written as a
@@ -533,9 +555,19 @@ h1,h2,.section-title{
   animation:cueDrop 2.2s ease-in-out infinite;
 }
 @keyframes cueDrop{ to{ top:100%; } }
-/* a short window has no room for the cue under the call-to-action buttons */
-@media (max-height:820px){
+/* The cue is the first thing to go: on anything but a tall display there is
+   no room for it under the buttons, and it matters least. Kept separate from
+   the sizing query below so a laptop drops the cue without shrinking type. */
+@media (max-height:980px){
   .scroll-cue{ display:none; }
+}
+/* Genuinely short windows: the tagline is deliberately large now, so here the
+   artwork gives up the room rather than the type. */
+@media (max-height:820px){
+  .hero-kicker{ font-size:clamp(1.05rem,.9rem + .8vw,1.55rem); margin-top:clamp(.7rem,1.6vh,1.1rem); }
+  .hero-monogram{ height:clamp(2rem,1.7rem + 1vw,2.6rem); }
+  .hero-lockup{ width:min(86vw,760px,54vh); }
+  .hero-ctas{ margin-top:clamp(1rem,2.4vh,1.6rem); }
 }
 
 .lens-canvas{
@@ -1028,7 +1060,7 @@ h1,h2,.section-title{
 
       <div class="hero-content" id="heroContent">
         <img class="hero-monogram" src="assets/sl-mark.png" width="216" height="180" alt="" aria-hidden="true" fetchpriority="high" decoding="async">
-        <p class="hero-kicker chrome-text">Every story holds a silver lining.</p>
+        <p class="hero-kicker chrome-text">Every story holds<br>a silver lining.</p>
         <h1 class="hero-lockup">
           <picture>
             <!-- the brand runs the diamond wordmark on phones and the lens

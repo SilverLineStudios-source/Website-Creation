@@ -30,12 +30,15 @@ selected work, process, differentiators, the studio, an FAQ accordion, a booking
 project-brief form. Both the calendar and the form compose `mailto:` messages and say so on the page,
 since a static site has no backend to take a real booking.
 
-Reel and portrait imagery are still placeholders pending real photography.
+The studio section carries the supplied founder headshot, cropped to the 4:5 plate from the
+screenshot's inner panel so the site draws the only corner brackets on screen. Reel and work-tile
+imagery are still placeholders pending real photography.
 
 **Needs confirming before this goes live**: the FAQ answers (timelines, revision counts, travel terms)
 are drafts, flagged with a comment in the source. The studio blurb now says "photography and video
 production ... commercial films, branded content, portraits, and event coverage", taken from the
-reference site, so check it matches what the studio actually sells.
+reference site, so check it matches what the studio actually sells. The founder portrait's caption
+reads "Founder & Director", inferred from that same blurb - confirm the title.
 
 Verified with a headless-browser pass at desktop, mobile, and reduced-motion: no console errors, no
 failed requests, no horizontal overflow at 360/390/768px, and the calendar and form interactions

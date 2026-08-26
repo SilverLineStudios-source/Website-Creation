@@ -1762,14 +1762,31 @@ h1,h2,.section-title{
     /* The real logo, held level in the middle of the frame while the barrel
        turns around it, so the wordmark stays readable throughout. It scales
        with the aperture, so the push travels through the logo. */
-    var markFade = Math.max(0, 1 - bloom * 1.7);
-    if (markReady && markFade > 0){
+    /* The logo is a raster with a hard resolution ceiling, so it has to
+       retire during the push rather than survive it. */
+    var retire = (t - 0.42) / 0.43;
+    retire = retire < 0 ? 0 : retire > 1 ? 1 : retire;
+    var markFade = 1 - Math.pow(retire, 1.25);
+    if (markReady && markFade > 0.01){
       var mw = innerR * 1.3;
       var mh = mw * (markImg.naturalHeight / markImg.naturalWidth);
+
+      /* Blur by how far past its own resolution the logo is actually being
+         drawn, not by a guessed curve. Measured against real device pixels,
+         so it stays dead sharp while the source can still cover the area and
+         softens only once it genuinely cannot, on any screen density.
+         A fixed curve either blurs early (throwing away sharpness the source
+         had) or late (showing pixels), because the crossover point moves
+         with viewport width and DPR. */
+      var scaleNow = 1;
+      try { scaleNow = gsap.getProperty(canvas, 'scaleX') || 1; } catch (e) {}
+      var cssPerUnit = (canvas.clientWidth || SIZE) / SIZE;
+      var drawnPx = mw * cssPerUnit * scaleNow * (window.devicePixelRatio || 1);
+      var over = drawnPx / (markImg.naturalWidth || 1);
+      var markBlur = over > 1.05 ? Math.min(16, (over - 1.05) * 10) : 0;
+
       ctx.globalAlpha = markFade;
-      /* it is a raster, so soften it as it magnifies: this both hides the
-         upscale and reads as the focus falling off at speed */
-      if (bloom > 0.02) ctx.filter = 'blur(' + (bloom * 7).toFixed(2) + 'px)';
+      if (markBlur > 0.15) ctx.filter = 'blur(' + markBlur.toFixed(2) + 'px)';
       ctx.drawImage(markImg, -mw / 2, -mh / 2, mw, mh);
       ctx.filter = 'none';
       ctx.globalAlpha = 1;

@@ -1764,7 +1764,7 @@ h1,h2,.section-title{
        with the aperture, so the push travels through the logo. */
     /* The logo is a raster with a hard resolution ceiling, so it has to
        retire during the push rather than survive it. */
-    var retire = (t - 0.42) / 0.43;
+    var retire = (t - 0.30) / 0.34;
     retire = retire < 0 ? 0 : retire > 1 ? 1 : retire;
     var markFade = 1 - Math.pow(retire, 1.25);
     if (markReady && markFade > 0.01){
@@ -1782,8 +1782,11 @@ h1,h2,.section-title{
       try { scaleNow = gsap.getProperty(canvas, 'scaleX') || 1; } catch (e) {}
       var cssPerUnit = (canvas.clientWidth || SIZE) / SIZE;
       var drawnPx = mw * cssPerUnit * scaleNow * (window.devicePixelRatio || 1);
+      /* Sharp right up to 1:1, then ramping hard: better it reads as out of
+         focus than as pixels, so the blur outruns the upscale rather than
+         trailing it. */
       var over = drawnPx / (markImg.naturalWidth || 1);
-      var markBlur = over > 1.05 ? Math.min(16, (over - 1.05) * 10) : 0;
+      var markBlur = over > 0.95 ? Math.min(18, (over - 0.95) * 14) : 0;
 
       ctx.globalAlpha = markFade;
       if (markBlur > 0.15) ctx.filter = 'blur(' + markBlur.toFixed(2) + 'px)';

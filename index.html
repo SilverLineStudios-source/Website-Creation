@@ -1710,9 +1710,13 @@ h1,h2,.section-title{
        The travel is tied to the light rather than the push, so the iris opens
        as the light comes up instead of the two running on separate clocks:
        stopped down at rest, visibly widening with the early glow while the
-       barrel is still on screen, then surging with the late burst. */
+       barrel is still on screen, then surging with the late burst.
+
+       Most of the travel sits in the glow stage on purpose: that is the only
+       window where the blades are actually on screen, so it is the only
+       window where the opening can be watched happening. */
     var blades = 8;
-    var openness = .34 + glow * .30 + bloom * .36;
+    var openness = .28 + glow * .52 + bloom * .22;
     var innerR = (r - 44) * openness * .92;
     ctx.save();
     ctx.translate(cx, cy);

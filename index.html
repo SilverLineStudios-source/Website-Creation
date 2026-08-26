@@ -610,7 +610,9 @@ h1,h2,.section-title{
 
 .chapter-caption{
   position:absolute; inset:0; margin:auto; height:max-content;
-  z-index:2; padding-inline:1.25rem; text-align:center; max-width:36rem;
+  /* must clear the lens canvas (3), the hud (4) and the whiteout (5), or the
+     scaled-up canvas paints straight over the caption and it reads as a ghost */
+  z-index:6; padding-inline:1.25rem; text-align:center; max-width:36rem;
   opacity:0; font-family:var(--font-display); font-weight:500; font-style:italic;
   font-size:clamp(1.2rem,.9rem + 1.6vw,2rem); letter-spacing:.02em;
   color:var(--chrome-100); text-shadow:0 0 30px rgba(226,255,240,.4);
@@ -1545,12 +1547,14 @@ h1,h2,.section-title{
       ctx.stroke();
     }
 
-    /* coated glass: emerald bloom off the top-left, falling to black */
+    /* Coated glass. The emerald is a tight off-axis coating flare only: the
+       optical centre stays near-black, because at full zoom that centre is
+       what fills the whole viewport, and a mid-green there reads as mud. */
     var grad = ctx.createRadialGradient(cx - r * .32, cy - r * .34, r * .06, cx, cy, r);
-    grad.addColorStop(0, 'rgba(126,214,172,.5)');
-    grad.addColorStop(.3, 'rgba(20,155,87,.24)');
-    grad.addColorStop(.66, 'rgba(14,26,20,.92)');
-    grad.addColorStop(1, 'rgba(8,10,9,1)');
+    grad.addColorStop(0, 'rgba(150,232,192,.45)');
+    grad.addColorStop(.16, 'rgba(28,150,92,.2)');
+    grad.addColorStop(.4, 'rgba(9,17,13,.94)');
+    grad.addColorStop(1, 'rgba(5,7,6,1)');
     ctx.beginPath();
     ctx.arc(cx, cy, r - 44, 0, Math.PI * 2);
     ctx.fillStyle = grad;
@@ -1569,10 +1573,13 @@ h1,h2,.section-title{
     ctx.strokeRect(-d * .72, -d * .72, d * 1.44, d * 1.44);
     ctx.restore();
 
-    /* aperture blades */
+    /* Aperture blades. The opening widens as the camera pushes in, so the
+       rim travels past the frame and the viewer ends up inside the light.
+       Closing it instead (as this once did) leaves a shrinking disc floating
+       in the middle of the screen, which reads as an orb, not a journey. */
     var blades = 8;
-    var openness = .18 + t * .82;
-    var innerR = (r - 44) * (1 - openness) * .92;
+    var openness = .42 + t * .56;
+    var innerR = (r - 44) * openness * .92;
     ctx.save();
     ctx.translate(cx, cy);
     for (var b = 0; b < blades; b++){
@@ -1585,13 +1592,17 @@ h1,h2,.section-title{
       ctx.fillStyle = 'rgba(4,5,6,.92)';
       ctx.fill();
     }
-    /* the opening itself: emerald core burning out to white as it widens */
+    /* The opening. Past roughly 12x the viewport shows a single flat colour
+       whatever is drawn here, so that colour has to stay dark and read as
+       depth. The bloom is therefore held at nothing until late, then ramps
+       hard and hands straight off to the whiteout. */
+    var bloom = Math.pow(Math.max(0, (t - 0.55) / 0.45), 1.6);
     ctx.beginPath();
     ctx.arc(0, 0, innerR, 0, Math.PI * 2);
     var centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, innerR || 1);
-    centerGrad.addColorStop(0, 'rgba(233,255,244,' + (0.2 + t * 0.8) + ')');
-    centerGrad.addColorStop(.45, 'rgba(110,224,168,' + (0.14 + t * 0.66) + ')');
-    centerGrad.addColorStop(1, 'rgba(20,155,87,' + (0.04 + t * 0.42) + ')');
+    centerGrad.addColorStop(0, 'rgba(236,255,246,' + (0.10 + bloom * 0.90) + ')');
+    centerGrad.addColorStop(.4, 'rgba(110,224,168,' + (0.05 + bloom * 0.70) + ')');
+    centerGrad.addColorStop(1, 'rgba(20,155,87,' + (0.02 + bloom * 0.25) + ')');
     ctx.fillStyle = centerGrad;
     ctx.fill();
     ctx.restore();
@@ -1603,12 +1614,15 @@ h1,h2,.section-title{
     ctx.lineWidth = 3;
     ctx.stroke();
 
-    /* anamorphic streak, the key art's signature flare */
+    /* Anamorphic streak, the key art's signature flare. It is a feature of
+       the lens surface, so it fades out as the camera travels inside it,
+       rather than smearing into a band across the viewport. */
+    var flare = Math.pow(1 - t, 1.4);
     var streak = ctx.createLinearGradient(cx - r * 2.1, cy, cx + r * 2.1, cy);
     streak.addColorStop(0,   'rgba(61,220,144,0)');
-    streak.addColorStop(.32, 'rgba(61,220,144,' + (0.16 + t * 0.2) + ')');
-    streak.addColorStop(.5,  'rgba(226,255,240,' + (0.4 + t * 0.5) + ')');
-    streak.addColorStop(.68, 'rgba(61,220,144,' + (0.16 + t * 0.2) + ')');
+    streak.addColorStop(.32, 'rgba(61,220,144,' + (0.2 * flare) + ')');
+    streak.addColorStop(.5,  'rgba(226,255,240,' + (0.55 * flare) + ')');
+    streak.addColorStop(.68, 'rgba(61,220,144,' + (0.2 * flare) + ')');
     streak.addColorStop(1,   'rgba(61,220,144,0)');
     ctx.fillStyle = streak;
     ctx.fillRect(cx - r * 2.1, cy - 1.5, r * 4.2, 3);
@@ -1666,16 +1680,18 @@ h1,h2,.section-title{
       .to('.hero-frame-draw', { autoAlpha:0, duration:.1 }, .2)
       .fromTo('.lens-canvas', { autoAlpha:0, filter:'blur(14px)' }, { autoAlpha:1, filter:'blur(0px)', duration:.12 }, .1)
       .set('.hud', { autoAlpha:1 }, .14)
-      .to('.lens-canvas', { scale:52, duration:.56, ease:'power1.in' }, .18)
+      .to('.lens-canvas', { scale:34, duration:.56, ease:'power1.in' }, .18)
       .fromTo('.light-sweep', { xPercent:-30, autoAlpha:0 }, { xPercent:30, autoAlpha:1, duration:.46, ease:'sine.inOut' }, .18)
       .to('.light-sweep', { autoAlpha:0, duration:.08 }, .62)
       .fromTo('#chapterCaption', { autoAlpha:0, y:14 }, { autoAlpha:1, y:0, duration:.1 }, .32)
       .to('#chapterCaption', { autoAlpha:0, y:-14, duration:.1 }, .54)
       .to('.hud', { autoAlpha:0, duration:.06 }, .68)
-      .to('#whiteout', { autoAlpha:1, duration:.08 }, .7)
-      .to('#whiteout', { autoAlpha:0, duration:.12 }, .8)
-      .to('.lens-canvas', { autoAlpha:0, duration:.05 }, .78)
-      .fromTo('#statement', { autoAlpha:0, y:26 }, { autoAlpha:1, y:0, duration:.18 }, .82);
+      .to('#whiteout', { autoAlpha:1, duration:.06 }, .70)
+      .to('.lens-canvas', { autoAlpha:0, duration:.05 }, .76)
+      /* the flash must be fully clear before the line resolves: the closing
+         phrase is set in emerald, and it disappears against a green flash */
+      .to('#whiteout', { autoAlpha:0, duration:.10 }, .76)
+      .fromTo('#statement', { autoAlpha:0, y:26 }, { autoAlpha:1, y:0, duration:.14 }, .86);
   });
 
   /* ---------- grade compare slider ---------- */

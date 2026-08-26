@@ -477,13 +477,8 @@ h1,h2,.section-title{
 @media (max-width:560px){
   .hero-kicker{ letter-spacing:.2em; font-size:.66rem; }
 }
-/* the diamond wordmark is a different shape, so it takes its own mask */
 @media (max-width:700px){
-  .hero-lockup{ width:min(98vw,560px,60vh); }
-  .hero-lockup img{
-    -webkit-mask-image:radial-gradient(ellipse 60% 70% at 50% 50%, #000 56%, transparent 100%);
-    mask-image:radial-gradient(ellipse 60% 70% at 50% 50%, #000 56%, transparent 100%);
-  }
+  .hero-lockup{ width:min(92vw,520px,56vh); }
   /* the reference runs the mark on its own in the header on phones */
   .brand-word{ display:none; }
 }
@@ -503,18 +498,23 @@ h1,h2,.section-title{
   width:min(86vw,760px,72vh);
   will-change:transform,filter,opacity;
 }
-.hero-lockup img{
-  width:100%; height:auto;
-  /* The plate is cut from dark key art, so mask everything except the barrel
-     itself and its flare, or the plate's own background reads as a box.
-     Layer one hugs the lens circle, layer two keeps the anamorphic streak;
-     the two mask layers union by default. */
-  -webkit-mask-image:
-    radial-gradient(ellipse 30% 50% at 50% 49%, #000 88%, transparent 100%),
-    radial-gradient(ellipse 50% 7% at 50% 55%, #000 18%, transparent 100%);
-  mask-image:
-    radial-gradient(ellipse 30% 50% at 50% 49%, #000 88%, transparent 100%),
-    radial-gradient(ellipse 50% 7% at 50% 55%, #000 18%, transparent 100%);
+.hero-lockup img{ width:100%; height:auto; }
+/* Scoped to the breakpoint that actually serves the lens plate. Written as a
+   max-width override instead, it would lose to this rule on source order,
+   since media queries carry no extra specificity, and the phone's diamond
+   (which ships its own alpha) would get masked to the lens geometry. */
+@media (min-width:701px){
+  .hero-lockup img{
+    /* the plate is cut from dark key art, so mask everything except the
+       barrel and its flare, or its own background reads as a box. Layer one
+       hugs the lens circle, layer two keeps the anamorphic streak. */
+    -webkit-mask-image:
+      radial-gradient(ellipse 30% 50% at 50% 49%, #000 88%, transparent 100%),
+      radial-gradient(ellipse 50% 7% at 50% 55%, #000 18%, transparent 100%);
+    mask-image:
+      radial-gradient(ellipse 30% 50% at 50% 49%, #000 88%, transparent 100%),
+      radial-gradient(ellipse 50% 7% at 50% 55%, #000 18%, transparent 100%);
+  }
 }
 .hero-ctas{ display:flex; gap:1rem; justify-content:center; margin-top:clamp(1.5rem,4vh,3rem); flex-wrap:wrap; }
 
@@ -604,6 +604,9 @@ h1,h2,.section-title{
   /* must clear the lens canvas (3), the hud (4) and the whiteout (5), or the
      scaled-up canvas paints straight over the caption and it reads as a ghost */
   z-index:6; padding-inline:1.25rem; text-align:center; max-width:36rem;
+  /* sits low rather than centred: the logo's own wordmark owns the middle of
+     the frame as the camera passes through it */
+  top:auto; bottom:15%;
   opacity:0; font-family:var(--font-display); font-weight:500; font-style:italic;
   font-size:clamp(1.2rem,.9rem + 1.6vw,2rem); letter-spacing:.02em;
   color:var(--chrome-100);
@@ -1030,7 +1033,7 @@ h1,h2,.section-title{
           <picture>
             <!-- the brand runs the diamond wordmark on phones and the lens
                  lockup on wider screens; only one file is ever fetched -->
-            <source media="(max-width:700px)" srcset="assets/diamond.jpg" width="1140" height="660">
+            <source media="(max-width:700px)" srcset="assets/mark.png" width="660" height="600">
             <img src="assets/lens.jpg" width="810" height="480" alt="Silver Line Studios" fetchpriority="high" decoding="async">
           </picture>
         </h1>
@@ -1511,7 +1514,18 @@ h1,h2,.section-title{
   var ctx = canvas.getContext('2d');
   var SIZE = canvas.width;
 
+  /* the logo that travels through the lens, drawn into the canvas */
+  var markImg = new Image();
+  var markReady = false;
+  var lastT = 0, lastSpin = 0;
+  markImg.onload = function(){
+    markReady = true;
+    drawLens(lastT, lastSpin);   // the resting frame was drawn before it arrived
+  };
+  markImg.src = 'assets/mark.png';
+
   function drawLens(t, spin){
+    lastT = t; lastSpin = spin || 0;
     /* t = 0..1 aperture progress, spin = barrel rotation in radians */
     ctx.clearRect(0, 0, SIZE, SIZE);
     var cx = SIZE / 2, cy = SIZE / 2, r = SIZE * .42;
@@ -1623,19 +1637,21 @@ h1,h2,.section-title{
     }
     ctx.restore();
 
-    /* the brand's mark, held in the middle of the frame. It scales with the
-       aperture, so the push travels through it rather than past it. */
-    var markFade = Math.max(0, 1 - bloom * 1.5);
-    ctx.save();
-    ctx.rotate(Math.PI / 4 - spin * 0.5);
-    var d = innerR * 0.62;
-    ctx.strokeStyle = 'rgba(236,240,243,' + (0.8 * markFade) + ')';
-    ctx.lineWidth = Math.max(1.5, innerR * 0.02);
-    ctx.strokeRect(-d, -d, d * 2, d * 2);
-    ctx.strokeStyle = 'rgba(110,224,168,' + (0.55 * markFade) + ')';
-    ctx.lineWidth = Math.max(1, innerR * 0.011);
-    ctx.strokeRect(-d * .62, -d * .62, d * 1.24, d * 1.24);
-    ctx.restore();
+    /* The real logo, held level in the middle of the frame while the barrel
+       turns around it, so the wordmark stays readable throughout. It scales
+       with the aperture, so the push travels through the logo. */
+    var markFade = Math.max(0, 1 - bloom * 1.7);
+    if (markReady && markFade > 0){
+      var mw = innerR * 1.3;
+      var mh = mw * (markImg.naturalHeight / markImg.naturalWidth);
+      ctx.globalAlpha = markFade;
+      /* it is a raster, so soften it as it magnifies: this both hides the
+         upscale and reads as the focus falling off at speed */
+      if (bloom > 0.02) ctx.filter = 'blur(' + (bloom * 7).toFixed(2) + 'px)';
+      ctx.drawImage(markImg, -mw / 2, -mh / 2, mw, mh);
+      ctx.filter = 'none';
+      ctx.globalAlpha = 1;
+    }
 
     ctx.restore();
     ctx.restore();

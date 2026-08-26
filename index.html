@@ -279,13 +279,28 @@ h1,h2,.section-title{
   transform:translateY(-2px);
   box-shadow:0 0 26px rgba(20,155,87,.16);
 }
+/* emerald outline, emerald type: the quieter call to action */
+.btn-green{
+  border:1px solid var(--green-500);
+  color:var(--green-100);
+  background:rgba(20,155,87,.06);
+}
+.btn-green:hover{
+  border-color:var(--green-400);
+  color:#eafff4;
+  background:rgba(20,155,87,.15);
+  transform:translateY(-2px);
+  box-shadow:0 0 28px rgba(20,155,87,.24);
+}
+
 /* a light wipe crosses the button on hover, the flare motif in miniature */
 .btn::after{
   content:""; position:absolute; top:0; bottom:0; width:38%;
   background:linear-gradient(100deg, transparent, rgba(255,255,255,.42), transparent);
   transform:translateX(-320%); pointer-events:none;
 }
-.btn-ghost::after{ background:linear-gradient(100deg, transparent, rgba(110,224,168,.3), transparent); }
+.btn-ghost::after,
+.btn-green::after{ background:linear-gradient(100deg, transparent, rgba(110,224,168,.3), transparent); }
 .btn:hover::after{ transform:translateX(420%); transition:transform .85s var(--ease-out); }
 
 /* corner bracket frame — camera-viewfinder motif, reused on portrait + contact card */
@@ -471,10 +486,18 @@ h1,h2,.section-title{
 .mobile-nav ul a:focus-visible{ color:var(--green-100); padding-left:.4rem; }
 .mobile-nav ul a:hover::after{ color:var(--green-400); transform:translateX(4px); }
 
-.mobile-nav .btn{ margin-top:2rem; align-self:stretch; }
+/* centred and sized to itself, rather than stretched edge to edge, so the
+   action reads as a considered button under the left-aligned list */
+.mobile-nav .btn{
+  margin-top:2.25rem;
+  align-self:center;
+  width:min(100%,18rem);
+  padding-block:1.15rem;
+}
 /* the menu doubles as a contact card, so it is a destination not a detour */
 .mobile-nav-meta{
   margin-top:2rem; display:flex; flex-direction:column; gap:.5rem;
+  align-items:center; text-align:center;
   font-size:.8125rem; color:var(--chrome-600);
 }
 .mobile-nav-meta a{ color:var(--chrome-300); }
@@ -1095,7 +1118,7 @@ h1,h2,.section-title{
     <li><a href="#book" data-index="05">Book</a></li>
     <li><a href="#contact" data-index="06">Contact</a></li>
   </ul>
-  <a class="btn btn-solid" href="#book">Book a Time</a>
+  <a class="btn btn-green" href="#contact">Start a Project</a>
   <div class="mobile-nav-meta">
     <span>Calgary, Alberta</span>
     <a href="tel:+14038046191">403.804.6191</a>

@@ -453,15 +453,6 @@ h1,h2,.section-title{
   50%{ transform:translate(2%,-2%) scale(1.1); }
 }
 
-.diamond-motif{
-  position:absolute; inset:0; margin:auto; width:min(70vw,700px); height:min(70vw,700px);
-  pointer-events:none;
-}
-.diamond-motif .ring:nth-child(even){ border-color:rgba(61,220,144,.11); }
-.diamond-motif .ring{
-  position:absolute; inset:0; margin:auto; border:1px solid var(--line);
-  transform:rotate(45deg);
-}
 
 .hero-content{
   position:absolute; inset:0; margin:auto; height:max-content; z-index:2;
@@ -615,7 +606,10 @@ h1,h2,.section-title{
   z-index:6; padding-inline:1.25rem; text-align:center; max-width:36rem;
   opacity:0; font-family:var(--font-display); font-weight:500; font-style:italic;
   font-size:clamp(1.2rem,.9rem + 1.6vw,2rem); letter-spacing:.02em;
-  color:var(--chrome-100); text-shadow:0 0 30px rgba(226,255,240,.4);
+  color:var(--chrome-100);
+  /* the dark halo carries the legibility; the light one is the glow. Against
+     the burst behind the mark, a light glow alone leaves it light-on-light. */
+  text-shadow:0 2px 18px rgba(0,0,0,.85), 0 0 34px rgba(226,255,240,.35);
 }
 
 /* the line the whole scrub resolves onto (it is itself the <p>, so the
@@ -1022,7 +1016,6 @@ h1,h2,.section-title{
         <div class="smoke s1"></div>
         <div class="smoke s2"></div>
         <div class="smoke s3"></div>
-        <div class="diamond-motif" id="diamondMotif"></div>
         <svg class="hero-frame-draw" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <rect x="2.5" y="2.5" width="95" height="95" pathLength="100" id="heroFrameRect"/>
         </svg>
@@ -1489,19 +1482,6 @@ h1,h2,.section-title{
   mobileNav.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeNav); });
   document.addEventListener('keydown', function(e){ if (e.key === 'Escape') closeNav(); });
 
-  /* ---------- diamond motif (concentric rings behind hero) ---------- */
-  var motif = document.getElementById('diamondMotif');
-  var RING_COUNT = 7;
-  for (var i = 0; i < RING_COUNT; i++){
-    var ring = document.createElement('div');
-    ring.className = 'ring';
-    var scale = .28 + (i / (RING_COUNT - 1)) * .95;
-    var opacity = .5 - (i / (RING_COUNT - 1)) * .42;
-    ring.style.transform = 'rotate(45deg) scale(' + scale.toFixed(3) + ')';
-    ring.style.opacity = opacity.toFixed(3);
-    motif.appendChild(ring);
-  }
-
   /* ---------- whisper-level particle fields ---------- */
   function seedParticles(container, count, sizeMin, sizeMax){
     if (!container || reduceMotion) return;
@@ -1531,21 +1511,39 @@ h1,h2,.section-title{
   var ctx = canvas.getContext('2d');
   var SIZE = canvas.width;
 
-  function drawLens(t){
-    /* t = 0..1 aperture progress */
+  function drawLens(t, spin){
+    /* t = 0..1 aperture progress, spin = barrel rotation in radians */
     ctx.clearRect(0, 0, SIZE, SIZE);
     var cx = SIZE / 2, cy = SIZE / 2, r = SIZE * .42;
+    var TAU = Math.PI * 2;
+    spin = spin || 0;
 
-    /* machined barrel rings, chrome cooling into the brand's emerald */
+    /* Machined barrel, chrome cooling into the brand's emerald. The knurling
+       ticks are what make the rotation legible: concentric circles alone look
+       identical however far they have turned. */
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(spin);
     for (var ring = 0; ring < 6; ring++){
       ctx.beginPath();
-      ctx.arc(cx, cy, r - ring * 11, 0, Math.PI * 2);
+      ctx.arc(0, 0, r - ring * 11, 0, TAU);
       ctx.strokeStyle = ring % 2
         ? 'rgba(198,202,209,' + (0.42 - ring * 0.05) + ')'
         : 'rgba(61,220,144,' + (0.20 - ring * 0.025) + ')';
       ctx.lineWidth = ring % 2 ? 2 : 1;
       ctx.stroke();
     }
+    ctx.strokeStyle = 'rgba(198,202,209,.32)';
+    for (var k = 0; k < 48; k++){
+      var ka = (k / 48) * TAU;
+      var deep = k % 4 === 0;
+      ctx.lineWidth = deep ? 2.5 : 1.5;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(ka) * (r + 3), Math.sin(ka) * (r + 3));
+      ctx.lineTo(Math.cos(ka) * (r - (deep ? 17 : 9)), Math.sin(ka) * (r - (deep ? 17 : 9)));
+      ctx.stroke();
+    }
+    ctx.restore();
 
     /* Coated glass. The emerald is a tight off-axis coating flare only: the
        optical centre stays near-black, because at full zoom that centre is
@@ -1560,19 +1558,6 @@ h1,h2,.section-title{
     ctx.fillStyle = grad;
     ctx.fill();
 
-    /* the diamond, the brand's own mark, held inside the glass */
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(Math.PI / 4);
-    var d = (r - 62) * 0.72;
-    ctx.strokeStyle = 'rgba(198,202,209,' + (0.5 - t * 0.42) + ')';
-    ctx.lineWidth = 2;
-    ctx.strokeRect(-d, -d, d * 2, d * 2);
-    ctx.strokeStyle = 'rgba(61,220,144,' + (0.3 - t * 0.28) + ')';
-    ctx.lineWidth = 1;
-    ctx.strokeRect(-d * .72, -d * .72, d * 1.44, d * 1.44);
-    ctx.restore();
-
     /* Aperture blades. The opening widens as the camera pushes in, so the
        rim travels past the frame and the viewer ends up inside the light.
        Closing it instead (as this once did) leaves a shrinking disc floating
@@ -1583,14 +1568,19 @@ h1,h2,.section-title{
     ctx.save();
     ctx.translate(cx, cy);
     for (var b = 0; b < blades; b++){
-      var a0 = (b / blades) * Math.PI * 2 + t * 1.4;
-      var a1 = a0 + (Math.PI * 2 / blades) * 1.18;
+      var a0 = (b / blades) * TAU + spin * 0.55 + t * 1.4;
+      var a1 = a0 + (TAU / blades) * 1.18;
       ctx.beginPath();
       ctx.moveTo(0, 0);
       ctx.arc(0, 0, r - 40, a0, a1);
       ctx.closePath();
       ctx.fillStyle = 'rgba(4,5,6,.92)';
       ctx.fill();
+      /* a lit edge on each blade, or the blades and the opening are both
+         near-black and the aperture reads as one flat disc */
+      ctx.strokeStyle = 'rgba(198,202,209,.16)';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
     }
     /* The opening. Past roughly 12x the viewport shows a single flat colour
        whatever is drawn here, so that colour has to stay dark and read as
@@ -1605,6 +1595,49 @@ h1,h2,.section-title{
     centerGrad.addColorStop(1, 'rgba(20,155,87,' + (0.02 + bloom * 0.25) + ')');
     ctx.fillStyle = centerGrad;
     ctx.fill();
+
+    /* What is actually inside the lens. Drawn AFTER the blades and the
+       opening fill, clipped to the aperture: anything drawn before them is
+       painted over by the blades and never seen. Vector, so it stays sharp
+       all the way through the zoom, unlike a raster would. */
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(0, 0, innerR, 0, TAU);
+    ctx.clip();
+
+    /* light fanning out from behind the mark, counter-rotating against
+       the barrel so the assembly reads as two moving parts */
+    ctx.save();
+    ctx.rotate(-spin * 0.4);
+    for (var ray = 0; ray < 12; ray++){
+      var ra = (ray / 12) * TAU;
+      var rg = ctx.createLinearGradient(0, 0, Math.cos(ra) * innerR, Math.sin(ra) * innerR);
+      rg.addColorStop(0, 'rgba(226,255,240,' + (0.2 + bloom * 0.34) + ')');
+      rg.addColorStop(1, 'rgba(20,155,87,0)');
+      ctx.strokeStyle = rg;
+      ctx.lineWidth = innerR * 0.055;
+      ctx.beginPath();
+      ctx.moveTo(0, 0);
+      ctx.lineTo(Math.cos(ra) * innerR, Math.sin(ra) * innerR);
+      ctx.stroke();
+    }
+    ctx.restore();
+
+    /* the brand's mark, held in the middle of the frame. It scales with the
+       aperture, so the push travels through it rather than past it. */
+    var markFade = Math.max(0, 1 - bloom * 1.5);
+    ctx.save();
+    ctx.rotate(Math.PI / 4 - spin * 0.5);
+    var d = innerR * 0.62;
+    ctx.strokeStyle = 'rgba(236,240,243,' + (0.8 * markFade) + ')';
+    ctx.lineWidth = Math.max(1.5, innerR * 0.02);
+    ctx.strokeRect(-d, -d, d * 2, d * 2);
+    ctx.strokeStyle = 'rgba(110,224,168,' + (0.55 * markFade) + ')';
+    ctx.lineWidth = Math.max(1, innerR * 0.011);
+    ctx.strokeRect(-d * .62, -d * .62, d * 1.24, d * 1.24);
+    ctx.restore();
+
+    ctx.restore();
     ctx.restore();
 
     /* specular sweep across the barrel */
@@ -1664,8 +1697,12 @@ h1,h2,.section-title{
       },
       onUpdate: function(){
         var p = tl.progress();
-        var zoomT = gsap.utils.clamp(0, 1, gsap.utils.normalize(.18, .74, p));
-        drawLens(zoomT);
+        var zoomT = gsap.utils.clamp(0, 1, gsap.utils.normalize(.30, .76, p));
+        /* the barrel turns first and decelerates into the push, so the two
+           moves read as one gesture rather than two separate effects */
+        var spinRaw = gsap.utils.clamp(0, 1, gsap.utils.normalize(.06, .54, p));
+        var spin = (1 - Math.pow(1 - spinRaw, 3)) * Math.PI * 1.35;
+        drawLens(zoomT, spin);
         setTimecode(gsap.utils.clamp(0, 1, gsap.utils.normalize(.1, .82, p)));
       }
     });
@@ -1675,16 +1712,17 @@ h1,h2,.section-title{
        show its own pixels. */
     tl.fromTo('#heroFrameRect', { strokeDashoffset:100 }, { strokeDashoffset:0, duration:.16 }, 0)
       .to('.hero-monogram, .hero-kicker, .hero-ctas', { autoAlpha:0, y:-26, duration:.14, stagger:.02 }, 0)
-      .to('.hero-lockup', { scale:2.5, filter:'blur(16px)', autoAlpha:0, duration:.3, ease:'power2.in' }, .04)
-      .to('#diamondMotif', { autoAlpha:0, scale:1.6, duration:.24 }, 0)
-      .to('.hero-frame-draw', { autoAlpha:0, duration:.1 }, .2)
-      .fromTo('.lens-canvas', { autoAlpha:0, filter:'blur(14px)' }, { autoAlpha:1, filter:'blur(0px)', duration:.12 }, .1)
-      .set('.hud', { autoAlpha:1 }, .14)
-      .to('.lens-canvas', { scale:34, duration:.56, ease:'power1.in' }, .18)
-      .fromTo('.light-sweep', { xPercent:-30, autoAlpha:0 }, { xPercent:30, autoAlpha:1, duration:.46, ease:'sine.inOut' }, .18)
-      .to('.light-sweep', { autoAlpha:0, duration:.08 }, .62)
-      .fromTo('#chapterCaption', { autoAlpha:0, y:14 }, { autoAlpha:1, y:0, duration:.1 }, .32)
-      .to('#chapterCaption', { autoAlpha:0, y:-14, duration:.1 }, .54)
+      .to('.hero-lockup', { scale:2.2, filter:'blur(14px)', autoAlpha:0, duration:.2, ease:'power2.in' }, .04)
+      .to('.hero-frame-draw', { autoAlpha:0, duration:.1 }, .22)
+      .fromTo('.lens-canvas', { autoAlpha:0, filter:'blur(14px)' }, { autoAlpha:1, filter:'blur(0px)', duration:.12 }, .08)
+      .set('.hud', { autoAlpha:1 }, .12)
+      /* the push starts only once the barrel has turned; 20x rather than 34x
+         so the mark inside travels through frame instead of vanishing */
+      .to('.lens-canvas', { scale:20, duration:.46, ease:'power1.in' }, .30)
+      .fromTo('.light-sweep', { xPercent:-30, autoAlpha:0 }, { xPercent:30, autoAlpha:1, duration:.42, ease:'sine.inOut' }, .26)
+      .to('.light-sweep', { autoAlpha:0, duration:.08 }, .64)
+      .fromTo('#chapterCaption', { autoAlpha:0, y:14 }, { autoAlpha:1, y:0, duration:.1 }, .40)
+      .to('#chapterCaption', { autoAlpha:0, y:-14, duration:.1 }, .60)
       .to('.hud', { autoAlpha:0, duration:.06 }, .68)
       .to('#whiteout', { autoAlpha:1, duration:.06 }, .70)
       .to('.lens-canvas', { autoAlpha:0, duration:.05 }, .76)

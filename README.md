@@ -30,9 +30,9 @@ selected work, process, differentiators, the studio, an FAQ accordion, a booking
 project-brief form. Both the calendar and the form compose `mailto:` messages and say so on the page,
 since a static site has no backend to take a real booking.
 
-The studio section carries the supplied founder headshot, cropped to the 4:5 plate from the
-screenshot's inner panel so the site draws the only corner brackets on screen. Reel and work-tile
-imagery are still placeholders pending real photography.
+The studio section carries the supplied on-set photograph of the founder, cropped to the 4:5 plate
+from the 4534x4344 original. Reel and work-tile imagery are still placeholders pending real
+photography.
 
 **Needs confirming before this goes live**: the FAQ answers (timelines, revision counts, travel terms)
 are drafts, flagged with a comment in the source. The studio blurb now says "photography and video

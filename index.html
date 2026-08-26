@@ -906,17 +906,13 @@ h1,h2,.section-title{
   aspect-ratio:4/5; position:relative; margin:0; border:1px solid var(--line);
   background:linear-gradient(200deg,var(--ink-raised-2),rgba(11,11,12,.92));
 }
-.studio-portrait img{ width:100%; height:100%; object-fit:cover; object-position:50% 22%; }
-/* an emerald spill in the empty corner of the backdrop, kept well clear of
-   his face so it reads as room light rather than a cast on skin, and a
-   bottom scrim so the caption keeps contrast over the black jacket */
-.studio-portrait::before{
-  content:''; position:absolute; inset:0; pointer-events:none; mix-blend-mode:screen;
-  background:radial-gradient(circle at 4% 2%, rgba(20,155,87,.16), transparent 36%);
-}
+.studio-portrait img{ width:100%; height:100%; object-fit:cover; }
+/* no emerald wash here: the frame is lit on set and carries its own colour,
+   so an added tint read as a cast rather than as styling. just a scrim so
+   the caption holds over the out-of-focus foreground. */
 .studio-portrait::after{
-  content:''; position:absolute; inset:auto 0 0 0; height:44%; pointer-events:none;
-  background:linear-gradient(180deg, transparent, rgba(6,6,7,.86));
+  content:''; position:absolute; inset:auto 0 0 0; height:34%; pointer-events:none;
+  background:linear-gradient(180deg, transparent, rgba(6,6,7,.82));
 }
 /* ::after is generated last, so without this the scrim would dim the two
    bottom bracket marks */
@@ -1362,8 +1358,8 @@ h1,h2,.section-title{
         </div>
         <figure class="studio-portrait bracket-frame">
           <i></i><i></i><i></i><i></i>
-          <img src="assets/founder.jpg" width="968" height="1210" loading="lazy" decoding="async"
-               alt="Nicolas Rufiange, founder of Silver Line Studios, photographed against a dark studio backdrop.">
+          <img src="assets/founder.jpg" width="1080" height="1350" loading="lazy" decoding="async"
+               alt="Nicolas Rufiange on set, backlit by a practical, checking a light meter.">
           <figcaption class="studio-portrait-caption">
             <span class="studio-portrait-name">Nicolas Rufiange</span>
             <!-- title inferred from the studio copy ("founder-led", "a

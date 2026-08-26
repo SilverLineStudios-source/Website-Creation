@@ -377,16 +377,18 @@ h1,h2,.section-title{
 }
 .brand-word em{ font-style:normal; color:var(--chrome-600); }
 
-.main-nav ul{ display:flex; gap:var(--sp-4); }
+.main-nav ul{ display:flex; gap:2.35rem; }
 .main-nav a{
-  font-size:.7rem;
+  /* .2em tracking spread each word so wide the row read as congested even
+     with space between items. Tighter letters, more room between links. */
+  font-size:.78rem;
   font-weight:500;
-  letter-spacing:.2em;
+  letter-spacing:.09em;
   text-transform:uppercase;
   color:var(--chrome-500);
-  padding-block:.5rem;
+  padding-block:.55rem;
   position:relative;
-  transition:color .2s;
+  transition:color .22s;
 }
 .main-nav a::after{
   content:""; position:absolute; left:0; right:100%; bottom:0; height:1px;
@@ -398,29 +400,85 @@ h1,h2,.section-title{
 
 .header-cta{ padding:.7rem 1.35rem; }
 
-.nav-toggle{ display:none; flex-direction:column; gap:5px; padding:.5rem; }
-.nav-toggle span{ width:22px; height:1.5px; background:var(--chrome-100); transition:transform .3s var(--ease-out), opacity .3s; }
-.nav-toggle[aria-expanded="true"] span:nth-child(1){ transform:translateY(6.5px) rotate(45deg); }
-.nav-toggle[aria-expanded="true"] span:nth-child(2){ opacity:0; }
-.nav-toggle[aria-expanded="true"] span:nth-child(3){ transform:translateY(-6.5px) rotate(-45deg); }
+/* A labelled, bordered control reads as something to press; three bare lines
+   read as decoration. Two bars, not three: cleaner, and it makes the close
+   cross exact rather than approximate. */
+.nav-toggle{
+  display:none; align-items:center; gap:.6rem;
+  padding:.6rem .95rem; border:1px solid var(--line-strong);
+  border-radius:var(--radius-s);
+  transition:border-color .25s, background-color .25s;
+}
+.nav-toggle:hover, .nav-toggle[aria-expanded="true"]{
+  border-color:var(--green-400);
+  background:rgba(20,155,87,.1);
+}
+.nav-toggle-bars{ position:relative; width:20px; height:12px; flex:none; }
+.nav-toggle-bars i{
+  position:absolute; left:0; width:100%; height:1.5px; background:var(--chrome-100);
+  transition:transform .35s var(--ease-out);
+}
+.nav-toggle-bars i:nth-child(1){ top:2px; }
+.nav-toggle-bars i:nth-child(2){ bottom:2px; }
+.nav-toggle[aria-expanded="true"] .nav-toggle-bars i:nth-child(1){ transform:translateY(4px) rotate(45deg); }
+.nav-toggle[aria-expanded="true"] .nav-toggle-bars i:nth-child(2){ transform:translateY(-4px) rotate(-45deg); }
+.nav-toggle-label{
+  font-size:.7rem; font-weight:600; letter-spacing:.16em;
+  text-transform:uppercase; color:var(--chrome-100);
+}
 
 .mobile-nav{
   position:fixed; inset:0; z-index:190;
-  background:var(--ink);
+  background:
+    radial-gradient(ellipse 90% 60% at 50% 0%, rgba(20,155,87,.1), transparent 70%),
+    rgba(9,9,10,.97);
+  backdrop-filter:blur(18px);
   display:flex; flex-direction:column; justify-content:center;
-  padding:0 8vw;
+  padding:5.5rem 7vw 2.5rem;
   transform:translateY(-100%);
   transition:transform .5s var(--ease-in-out);
+  overflow-y:auto;
 }
 .mobile-nav.is-open{ transform:translateY(0); }
-.mobile-nav ul{ display:flex; flex-direction:column; gap:1.1rem; }
-.mobile-nav a{
-  font-family:var(--font-display);
+.mobile-nav ul{ display:flex; flex-direction:column; }
+
+/* Scoped to the list. Written as `.mobile-nav a` it also caught the call to
+   action, which then rendered as huge serif text wrapping over itself on top
+   of its own silver fill. */
+.mobile-nav ul li{ border-bottom:1px solid var(--line); }
+.mobile-nav ul li:first-child{ border-top:1px solid var(--line); }
+.mobile-nav ul a{
+  display:flex; align-items:baseline; gap:1rem;
+  padding-block:1.15rem;
+  font-family:var(--font-body);
   font-weight:500;
-  font-size:clamp(2.1rem,7.5vw,3.2rem);
+  font-size:1.35rem;
+  letter-spacing:.02em;
   color:var(--chrome-100);
+  transition:color .25s, padding-left .35s var(--ease-out);
 }
-.mobile-nav .btn{ margin-top:2.5rem; align-self:flex-start; }
+/* the index reads as a chapter list, and gives the eye somewhere to land */
+.mobile-nav ul a::before{
+  content:attr(data-index);
+  font-size:.7rem; letter-spacing:.16em; color:var(--green-500);
+  font-variant-numeric:tabular-nums;
+}
+.mobile-nav ul a::after{
+  content:"→"; margin-left:auto; color:var(--chrome-700);
+  transition:transform .35s var(--ease-out), color .25s;
+}
+.mobile-nav ul a:hover,
+.mobile-nav ul a:focus-visible{ color:var(--green-100); padding-left:.4rem; }
+.mobile-nav ul a:hover::after{ color:var(--green-400); transform:translateX(4px); }
+
+.mobile-nav .btn{ margin-top:2rem; align-self:stretch; }
+/* the menu doubles as a contact card, so it is a destination not a detour */
+.mobile-nav-meta{
+  margin-top:2rem; display:flex; flex-direction:column; gap:.5rem;
+  font-size:.8125rem; color:var(--chrome-600);
+}
+.mobile-nav-meta a{ color:var(--chrome-300); }
+.mobile-nav-meta span{ font-size:.7rem; letter-spacing:var(--track-label); text-transform:uppercase; color:var(--chrome-700); }
 
 /* ============ hero + lens sequence ============ */
 .hero-sequence{ position:relative; height:400vh; }
@@ -458,9 +516,6 @@ h1,h2,.section-title{
   position:absolute; inset:0; margin:auto; height:max-content; z-index:2;
   display:flex; flex-direction:column; align-items:center;
   text-align:center; padding-inline:1.25rem; will-change:transform,opacity;
-}
-.hero-monogram{
-  width:auto; height:clamp(2.6rem,2.1rem + 1.6vw,3.6rem);
 }
 
 .hero-kicker{
@@ -565,8 +620,7 @@ h1,h2,.section-title{
    artwork gives up the room rather than the type. */
 @media (max-height:820px){
   .hero-kicker{ font-size:clamp(1.05rem,.9rem + .8vw,1.55rem); margin-top:clamp(.7rem,1.6vh,1.1rem); }
-  .hero-monogram{ height:clamp(2rem,1.7rem + 1vw,2.6rem); }
-  .hero-lockup{ width:min(86vw,760px,54vh); }
+    .hero-lockup{ width:min(86vw,760px,54vh); }
   .hero-ctas{ margin-top:clamp(1rem,2.4vh,1.6rem); }
 }
 
@@ -1026,21 +1080,27 @@ h1,h2,.section-title{
     </nav>
     <a class="btn btn-ghost header-cta" href="#contact">Start a Project</a>
     <button class="nav-toggle" id="navToggle" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu">
-      <span></span><span></span><span></span>
+      <span class="nav-toggle-bars" aria-hidden="true"><i></i><i></i></span>
+      <span class="nav-toggle-label" aria-hidden="true">Menu</span>
     </button>
   </div>
 </header>
 
 <div class="mobile-nav" id="mobileNav" aria-hidden="true">
   <ul>
-    <li><a href="#work">Work</a></li>
-    <li><a href="#services">Services</a></li>
-    <li><a href="#studio">Studio</a></li>
-    <li><a href="#faq">FAQ</a></li>
-    <li><a href="#book">Book</a></li>
-    <li><a href="#contact">Contact</a></li>
+    <li><a href="#work" data-index="01">Work</a></li>
+    <li><a href="#services" data-index="02">Services</a></li>
+    <li><a href="#studio" data-index="03">Studio</a></li>
+    <li><a href="#faq" data-index="04">FAQ</a></li>
+    <li><a href="#book" data-index="05">Book</a></li>
+    <li><a href="#contact" data-index="06">Contact</a></li>
   </ul>
-  <a class="btn btn-solid" href="#contact">Start a Project</a>
+  <a class="btn btn-solid" href="#book">Book a Time</a>
+  <div class="mobile-nav-meta">
+    <span>Calgary, Alberta</span>
+    <a href="tel:+14038046191">403.804.6191</a>
+    <a href="mailto:silverlineproductions.ca@gmail.com">silverlineproductions.ca@gmail.com</a>
+  </div>
 </div>
 
 <main id="main">
@@ -1059,7 +1119,6 @@ h1,h2,.section-title{
       </div>
 
       <div class="hero-content" id="heroContent">
-        <img class="hero-monogram" src="assets/sl-mark.png" width="216" height="180" alt="" aria-hidden="true" fetchpriority="high" decoding="async">
         <p class="hero-kicker chrome-text">Every story holds<br>a silver lining.</p>
         <h1 class="hero-lockup">
           <picture>
@@ -1500,18 +1559,26 @@ h1,h2,.section-title{
   /* ---------- mobile nav ---------- */
   var navToggle = document.getElementById('navToggle');
   var mobileNav = document.getElementById('mobileNav');
+  var navLabel = navToggle.querySelector('.nav-toggle-label');
   function closeNav(){
     navToggle.setAttribute('aria-expanded', 'false');
+    navToggle.setAttribute('aria-label', 'Open menu');
+    if (navLabel) navLabel.textContent = 'Menu';
     mobileNav.classList.remove('is-open');
     mobileNav.setAttribute('aria-hidden', 'true');
+    document.body.style.overflow = '';
   }
   navToggle.addEventListener('click', function(){
     var open = navToggle.getAttribute('aria-expanded') === 'true';
     if (open) { closeNav(); }
     else {
       navToggle.setAttribute('aria-expanded', 'true');
+      navToggle.setAttribute('aria-label', 'Close menu');
+      if (navLabel) navLabel.textContent = 'Close';
       mobileNav.classList.add('is-open');
       mobileNav.setAttribute('aria-hidden', 'false');
+      /* stop the page scrolling behind the overlay */
+      document.body.style.overflow = 'hidden';
     }
   });
   mobileNav.querySelectorAll('a').forEach(function(a){ a.addEventListener('click', closeNav); });
@@ -1730,7 +1797,7 @@ h1,h2,.section-title{
   }, function(context){
     if (context.conditions.isReduced){
       gsap.set('.lens-canvas, .hud, .whiteout, .hero-frame-draw, .light-sweep, .chapter-caption, .statement', { autoAlpha:0 });
-      gsap.set('#heroContent, .hero-lockup, .hero-monogram, .hero-kicker, .hero-ctas', { autoAlpha:1, y:0, scale:1, filter:'blur(0px)' });
+      gsap.set('#heroContent, .hero-lockup, .hero-kicker, .hero-ctas', { autoAlpha:1, y:0, scale:1, filter:'blur(0px)' });
       return;
     }
 
@@ -1759,7 +1826,7 @@ h1,h2,.section-title{
        early, under cover of a focus pull. It never scales far enough to
        show its own pixels. */
     tl.fromTo('#heroFrameRect', { strokeDashoffset:100 }, { strokeDashoffset:0, duration:.16 }, 0)
-      .to('.hero-monogram, .hero-kicker, .hero-ctas', { autoAlpha:0, y:-26, duration:.14, stagger:.02 }, 0)
+      .to('.hero-kicker, .hero-ctas', { autoAlpha:0, y:-26, duration:.14, stagger:.02 }, 0)
       .to('.hero-lockup', { scale:2.2, filter:'blur(14px)', autoAlpha:0, duration:.2, ease:'power2.in' }, .04)
       .to('.hero-frame-draw', { autoAlpha:0, duration:.1 }, .22)
       .fromTo('.lens-canvas', { autoAlpha:0, filter:'blur(14px)' }, { autoAlpha:1, filter:'blur(0px)', duration:.12 }, .08)

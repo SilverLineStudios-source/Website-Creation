@@ -43,6 +43,14 @@ watch-on-the-host link for when the embed itself is blocked. An
 unlisted or private video needs this site's domain whitelisted in its host's privacy settings or
 the embed will refuse to load. The other five tiles are still placeholders.
 
+The grade-compare slider carries two real states of one F45 frame: `assets/grade-raw.jpg` off the
+camera (mean saturation 0.07, nothing above ~112 luminance - log) and `assets/grade-graded.jpg`
+after the grade (mean saturation 0.38). The two crops were registered by normalised
+cross-correlation, NCC 0.88 at 1.955 flat px per graded px, so the halves land on the same pixels
+as the handle sweeps; the window stops short of both files' burnt-in UI. **The graded half came from
+a 549px phone screenshot and is only 364px wide, so it is upscaled 3.3x on desktop and looks it.**
+Replacing it with a real 1920x1080 still is the single biggest visual win left on the page.
+
 **Needs confirming before this goes live**: the FAQ answers (timelines, revision counts, travel terms)
 are drafts, flagged with a comment in the source. The studio blurb now says "photography and video
 production ... commercial films, branded content, portraits, and event coverage", taken from the

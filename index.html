@@ -786,27 +786,20 @@ h1,h2,.section-title{
   overflow:hidden; cursor:ew-resize; touch-action:pan-y; user-select:none;
   border:1px solid var(--line-strong);
 }
-.grade-panel{ position:absolute; inset:0; }
-.grade-raw{
-  background:
-    radial-gradient(circle at 30% 25%, rgba(180,184,190,.22), transparent 55%),
-    linear-gradient(160deg,#3a3c40,#26282b 55%,#3a3c40);
-  filter:saturate(.55) brightness(.92) contrast(.85);
-}
-.grade-graded{
-  background:
-    radial-gradient(circle at 68% 18%, rgba(140,240,190,.34), transparent 44%),
-    radial-gradient(circle at 22% 82%, rgba(20,155,87,.3), transparent 52%),
-    radial-gradient(circle at 45% 50%, rgba(198,202,209,.1), transparent 62%),
-    linear-gradient(160deg,#1d2521,#0c110e 58%,#1a211d);
-  filter:saturate(1.15) contrast(1.2);
-  clip-path:inset(0 50% 0 0);
-}
+.grade-panel{ position:absolute; inset:0; background:var(--ink); }
+.grade-panel img{ width:100%; height:100%; object-fit:cover; }
+/* the graded frame lies underneath full-bleed and the raw one is clipped over
+   it, so the split reads before-on-the-left, after-on-the-right. that order
+   also puts each tag over its own half - with the clip on the graded panel
+   instead, both tags sat under the layer above and neither was ever visible. */
+.grade-graded{ z-index:1; }
+.grade-raw{ z-index:2; clip-path:inset(0 50% 0 0); }
 .grade-tag{
   position:absolute; top:1rem; font-size:.7rem; font-weight:500; letter-spacing:var(--track-label);
   color:var(--chrome-300); background:rgba(11,11,12,.6); padding:.35rem .7rem;
   border:1px solid var(--line-strong); backdrop-filter:blur(4px);
 }
+.grade-tag{ z-index:2; }
 .grade-raw .grade-tag{ left:1rem; }
 .grade-graded .grade-tag{ right:1rem; color:var(--green-100); border-color:var(--line-green); }
 .grade-handle{
@@ -1344,11 +1337,15 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
       </div>
       <div class="grade-compare bracket-frame" id="gradeCompare">
         <i></i><i></i><i></i><i></i>
-        <div class="grade-panel grade-raw" aria-hidden="true">
-          <span class="grade-tag">RAW</span>
+        <div class="grade-panel grade-graded">
+          <img src="assets/grade-graded.jpg" width="364" height="205" loading="lazy" decoding="async"
+               alt="The same frame after the color grade: warm skin, a red rim light, deep blacks.">
+          <span class="grade-tag" aria-hidden="true">GRADED</span>
         </div>
-        <div class="grade-panel grade-graded" id="gradeGraded" aria-hidden="true">
-          <span class="grade-tag">GRADED</span>
+        <div class="grade-panel grade-raw" id="gradeRaw">
+          <img src="assets/grade-raw.jpg" width="712" height="401" loading="lazy" decoding="async"
+               alt="A frame from the F45 spot straight off the camera, flat and desaturated.">
+          <span class="grade-tag" aria-hidden="true">RAW</span>
         </div>
         <div class="grade-handle" id="gradeHandle" tabindex="0" role="slider"
              aria-label="Drag to compare the raw shot with the graded shot"
@@ -2041,14 +2038,14 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
   /* ---------- grade compare slider ---------- */
   (function(){
     var compare = document.getElementById('gradeCompare');
-    var graded = document.getElementById('gradeGraded');
+    var raw = document.getElementById('gradeRaw');
     var handle = document.getElementById('gradeHandle');
-    if (!compare || !graded || !handle) return;
+    if (!compare || !raw || !handle) return;
     var dragging = false;
 
     function setPos(pct){
       pct = Math.max(0, Math.min(100, pct));
-      graded.style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)';
+      raw.style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)';
       handle.style.left = pct + '%';
       handle.setAttribute('aria-valuenow', Math.round(pct));
     }

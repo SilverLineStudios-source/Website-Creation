@@ -37,8 +37,7 @@ photography.
 **Needs confirming before this goes live**: the FAQ answers (timelines, revision counts, travel terms)
 are drafts, flagged with a comment in the source. The studio blurb now says "photography and video
 production ... commercial films, branded content, portraits, and event coverage", taken from the
-reference site, so check it matches what the studio actually sells. The founder portrait's caption
-reads "Founder & Director", inferred from that same blurb - confirm the title.
+reference site, so check it matches what the studio actually sells.
 
 Verified with a headless-browser pass at desktop, mobile, and reduced-motion: no console errors, no
 failed requests, no horizontal overflow at 360/390/768px, and the calendar and form interactions

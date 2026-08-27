@@ -1329,11 +1329,12 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
         <h2 class="section-title" id="work-title">A few frames from the archive.</h2>
       </div>
       <div class="work-grid">
-        <!-- SWAP THE REEL HERE: data-vimeo is the numeric id from the video's
-             Vimeo URL (vimeo.com/<id>). Nothing is requested from Vimeo until
+        <!-- SWAP THE REEL HERE. Use data-youtube="<id>" for youtu.be/<id> or
+             youtube.com/watch?v=<id>, or data-vimeo="<id>" for vimeo.com/<id>.
+             Whichever is set, nothing is requested from the host until
              someone presses play. -->
         <figure class="work-cell">
-          <button type="button" class="work-tile is-video" data-vimeo="1221670318" data-video-title="F45 Training Shawnessy commercial spot">
+          <button type="button" class="work-tile is-video" data-youtube="9QioIBDVtmQ" data-video-title="F45 Training Shawnessy commercial spot">
             <div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">F45 Training. Play.</span></div>
           </button>
           <figcaption class="work-caption"><b>F45 Training Shawnessy.</b> A commercial spot for the Calgary studio.</figcaption>
@@ -2231,20 +2232,42 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
   var videoTrigger = null;
   var videoHideTimer = null;
 
+  /* both hosts are supported, so a tile can move between them by changing
+     nothing but its own attribute */
+  function embedUrl(trigger){
+    var yt = trigger.getAttribute('data-youtube');
+    if (yt){
+      /* youtube-nocookie is YouTube's privacy-enhanced host: no tracking
+         cookies until playback actually starts. playsinline stops iOS from
+         yanking the video into its own fullscreen player, which would throw
+         away the lightbox. rel=0 no longer removes related videos - since
+         2018 it only limits them to the same channel - but that is still
+         better than the default. */
+      return 'https://www.youtube-nocookie.com/embed/' + encodeURIComponent(yt)
+           + '?autoplay=1&rel=0&playsinline=1';
+    }
+    var vm = trigger.getAttribute('data-vimeo');
+    if (vm){
+      /* title/byline/portrait strip Vimeo's own overlay so the player reads
+         as part of the page rather than as someone else's; dnt=1 asks Vimeo
+         not to set tracking cookies */
+      return 'https://player.vimeo.com/video/' + encodeURIComponent(vm)
+           + '?autoplay=1&title=0&byline=0&portrait=0&dnt=1';
+    }
+    return null;
+  }
+
   function openVideo(trigger){
-    var id = trigger.getAttribute('data-vimeo');
-    if (!id) return;
+    var url = embedUrl(trigger);
+    if (!url) return;
     if (videoHideTimer){ clearTimeout(videoHideTimer); videoHideTimer = null; }
     videoTrigger = trigger;
 
     var frame = document.createElement('iframe');
-    /* title/byline/portrait strip Vimeo's own overlay so the player reads as
-       part of the page rather than as someone else's; dnt=1 asks Vimeo not to
-       set tracking cookies, which keeps the embed out of consent-banner
-       territory */
-    frame.src = 'https://player.vimeo.com/video/' + encodeURIComponent(id)
-              + '?autoplay=1&title=0&byline=0&portrait=0&dnt=1';
-    frame.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
+    frame.src = url;
+    /* the union of what the two players ask for; a permission the host does
+       not use costs nothing */
+    frame.setAttribute('allow', 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen');
     frame.setAttribute('allowfullscreen', '');
     frame.setAttribute('title', trigger.getAttribute('data-video-title') || 'Video');
     videoStage.appendChild(frame);
@@ -2270,7 +2293,7 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
     if (videoTrigger){ videoTrigger.focus(); videoTrigger = null; }
   }
 
-  document.querySelectorAll('[data-vimeo]').forEach(function(tile){
+  document.querySelectorAll('[data-vimeo], [data-youtube]').forEach(function(tile){
     tile.addEventListener('click', function(){ openVideo(tile); });
   });
   videoClose.addEventListener('click', closeVideo);

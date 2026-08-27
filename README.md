@@ -31,12 +31,12 @@ project-brief form. Both the calendar and the form compose `mailto:` messages an
 since a static site has no backend to take a real booking.
 
 The studio section carries the supplied on-set photograph of the founder, cropped to the 4:5 plate
-from the 4534x4344 original. The first work tile plays Vimeo video `1221670318` - the F45 Training Shawnessy spot - in a
-lightbox, captioned underneath; the id
-lives in one place, the `data-vimeo` attribute on that tile. Nothing is requested from Vimeo until
-a visitor presses play. If the video is unlisted or private, this site's domain has to be added to
-the video's Vimeo privacy settings or the embed will refuse to load. The other five tiles are
-still placeholders.
+from the 4534x4344 original. The first work tile plays the F45 Training Shawnessy spot in a lightbox, captioned underneath. The
+lightbox takes either host: `data-youtube="<id>"` or `data-vimeo="<id>"` on the tile, one
+attribute and nothing else. It currently carries YouTube `9QioIBDVtmQ`, served from
+youtube-nocookie.com. Nothing is requested from either host until a visitor presses play. An
+unlisted or private video needs this site's domain whitelisted in its host's privacy settings or
+the embed will refuse to load. The other five tiles are still placeholders.
 
 **Needs confirming before this goes live**: the FAQ answers (timelines, revision counts, travel terms)
 are drafts, flagged with a comment in the source. The studio blurb now says "photography and video

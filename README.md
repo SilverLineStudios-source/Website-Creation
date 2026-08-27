@@ -63,6 +63,13 @@ and F45's navy would have been near-invisible on the ink ground. The colour orig
 back in by regenerating without the tone step. `TFS` and `Pacific` are the names as they appear in the
 supplied artwork - confirm the full legal names before launch.
 
+Full-colour cutouts sit beside them as `assets/client-*-colour.png`, unused, so the strip can be
+switched over by changing three `src` values. They are not the default because the three logos
+disagree about what they are drawn to sit on, and the contrast maths is decisive: F45's navy is
+1.40:1 against the site's ink (invisible; graphics want 3:1), while TFS's gold is 1.70:1 against
+white. A dark strip loses F45, a white plate loses TFS, and no single background serves all three.
+Monochrome is the only treatment that renders every mark at equal weight.
+
 **Needs confirming before this goes live**: the FAQ answers (timelines, revision counts, travel terms)
 are drafts, flagged with a comment in the source. The studio blurb now says "photography and video
 production ... commercial films, branded content, portraits, and event coverage", taken from the

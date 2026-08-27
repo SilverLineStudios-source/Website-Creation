@@ -30,7 +30,7 @@ canvas-drawn lens (vector, so it stays sharp) which opens its aperture and blows
 flash before the page settles. Respects `prefers-reduced-motion`, which gets a clean static hero.
 
 **Below the hero**: services, an interactive drag-to-compare raw-vs-graded panel for the color work,
-selected work, process, differentiators, the studio, an FAQ accordion, a booking calendar, and a
+a rolling client strip, selected work, process, differentiators, the studio, an FAQ accordion, a booking calendar, and a
 project-brief form. Both the calendar and the form compose `mailto:` messages and say so on the page,
 since a static site has no backend to take a real booking.
 
@@ -54,6 +54,14 @@ cross-correlation, NCC 0.88 at 1.955 flat px per graded px, so the halves land o
 as the handle sweeps; the window stops short of both files' burnt-in UI. **The graded half came from
 a 549px phone screenshot and is only 364px wide, so it is upscaled 3.3x on desktop and looks it.**
 Replacing it with a real 1920x1080 still is the single biggest visual win left on the page.
+
+The client strip (`#clients`) rolls `assets/client-*.png`. Each was keyed off its own background - two
+were dark ink on white, one light ink on dark navy - and redrawn monochrome, keeping each mark's
+internal luminance so TFS's letters stay readable against the shield behind them. **They are
+monochrome by design, not by necessity**: full-colour client logos on this palette read as an ad bar,
+and F45's navy would have been near-invisible on the ink ground. The colour originals can be swapped
+back in by regenerating without the tone step. `TFS` and `Pacific` are the names as they appear in the
+supplied artwork - confirm the full legal names before launch.
 
 **Needs confirming before this goes live**: the FAQ answers (timelines, revision counts, travel terms)
 are drafts, flagged with a comment in the source. The studio blurb now says "photography and video

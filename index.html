@@ -816,6 +816,44 @@ h1,h2,.section-title{
 }
 .grade-handle-grip i{ width:2px; height:14px; background:var(--ink); border-radius:1px; }
 
+/* ============ client marquee ============ */
+.clients-section{
+  padding-block:var(--sp-4); position:relative; overflow:hidden;
+  border-block:1px solid var(--line);
+}
+/* .eyebrow is a flex row with a rule before it, so text-align does
+   nothing - it has to be centred as a flex line */
+.clients-head .eyebrow{ justify-content:center; margin-bottom:var(--sp-4); }
+.client-marquee{
+  position:relative; overflow:hidden;
+  /* fade the ends so logos arrive and leave rather than being chopped off
+     mid-mark at the container edge */
+  -webkit-mask-image:linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+  mask-image:linear-gradient(90deg, transparent, #000 10%, #000 90%, transparent);
+}
+.client-track{
+  display:flex; align-items:center; list-style:none;
+  gap:clamp(2.75rem,6vw,6rem); width:max-content;
+}
+/* the track holds two identical halves, so travelling exactly -50% lands the
+   copy where the original started and the seam never shows */
+.client-track.is-rolling{ animation:marquee-roll var(--client-roll-duration,42s) linear infinite; }
+.client-marquee:hover .client-track.is-rolling{ animation-play-state:paused; }
+@keyframes marquee-roll{
+  from{ transform:translate3d(0,0,0); }
+  to{ transform:translate3d(-50%,0,0); }
+}
+.client-track.is-static{ width:100%; flex-wrap:wrap; justify-content:center; row-gap:2rem; }
+.client-logo{ flex:0 0 auto; display:flex; align-items:center; }
+.client-logo img{
+  width:auto; height:clamp(2rem,4.2vw,2.75rem);
+  opacity:.62; transition:opacity .4s var(--ease-out);
+}
+.client-logo:hover img{ opacity:1; }
+/* optical sizing: the F45 lockup carries two lines of type under the mark, so
+   matching it by box height leaves it reading smaller than the other two */
+.client-logo.is-tall img{ height:clamp(2.5rem,5.2vw,3.4rem); }
+
 /* ============ work grid ============ */
 .work-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp-2); align-items:start; }
 .work-tile{
@@ -1353,6 +1391,21 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
           <span class="grade-handle-grip"><i></i><i></i><i></i></span>
         </div>
       </div>
+    </div>
+  </section>
+
+  <section class="clients-section" id="clients" data-reveal aria-labelledby="clients-title">
+    <div class="wrap clients-head">
+      <p class="eyebrow" id="clients-title">Trusted by</p>
+    </div>
+    <!-- one set of logos only; the roll clones it to fill the track and then
+         duplicates the whole thing, so the markup stays this short -->
+    <div class="client-marquee">
+      <ul class="client-track" id="clientTrack">
+        <li class="client-logo is-tall"><img src="assets/client-f45.png" width="351" height="170" alt="F45 Training Shawnessy" loading="lazy" decoding="async"></li>
+        <li class="client-logo"><img src="assets/client-tfs.png" width="291" height="170" alt="TFS" loading="lazy" decoding="async"></li>
+        <li class="client-logo"><img src="assets/client-pacific.png" width="411" height="170" alt="Pacific" loading="lazy" decoding="async"></li>
+      </ul>
     </div>
   </section>
 
@@ -2273,6 +2326,57 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
       }
     });
   });
+
+  /* ---------- client marquee ---------- */
+  (function(){
+    var track = document.getElementById('clientTrack');
+    if (!track) return;
+    var originals = Array.prototype.slice.call(track.children);
+    if (!originals.length) return;
+
+    if (reduceMotion){
+      /* no roll: show the set once, centred and wrapping */
+      track.classList.add('is-static');
+      return;
+    }
+
+    function build(){
+      track.classList.remove('is-rolling');
+      track.style.removeProperty('--client-roll-duration');
+      while (track.children.length > originals.length) track.removeChild(track.lastChild);
+
+      /* clone until one half is wider than the viewport, or the track runs out
+         before the loop point and a bare gap sweeps through */
+      var target = Math.max(window.innerWidth, 640) * 1.35;
+      var guard = 0;
+      while (track.scrollWidth < target && guard++ < 30){
+        originals.forEach(function(li){ track.appendChild(li.cloneNode(true)); });
+      }
+      var halfWidth = track.scrollWidth;
+
+      /* the second half is what -50% travels into, and it must not be read out
+         a second time by a screen reader */
+      var copy = Array.prototype.slice.call(track.children);
+      copy.forEach(function(li){
+        var c = li.cloneNode(true);
+        c.setAttribute('aria-hidden', 'true');
+        track.appendChild(c);
+      });
+
+      /* pace by distance, not by a fixed duration, so the logos travel at the
+         same speed whatever the viewport and however many clones it took */
+      var SPEED = 46;   // px per second
+      track.style.setProperty('--client-roll-duration', (halfWidth / SPEED).toFixed(2) + 's');
+      track.classList.add('is-rolling');
+    }
+
+    build();
+    var t;
+    window.addEventListener('resize', function(){
+      clearTimeout(t);
+      t = setTimeout(build, 250);
+    });
+  })();
 
   /* ---------- video lightbox ---------- */
   var lightbox = document.getElementById('videoLightbox');

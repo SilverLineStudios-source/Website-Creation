@@ -849,6 +849,45 @@ h1,h2,.section-title{
 .work-label{ font-size:.7rem; letter-spacing:var(--track-label); text-transform:uppercase; color:var(--chrome-700); }
 .work-note{ margin-top:var(--sp-3); color:var(--chrome-700); font-size:.875rem; }
 
+/* the first tile is a real button playing a real reel; the rest are still
+   placeholders, so it carries the emerald ring at rest rather than on hover */
+button.work-tile{ font:inherit; color:inherit; text-align:inherit; appearance:none; -webkit-appearance:none; padding:0; cursor:pointer; }
+button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offset:3px; }
+.work-tile.is-video{ border-color:var(--line-strong); }
+.work-tile.is-video .play-glyph{ border-color:var(--green-500); }
+.work-tile.is-video .play-glyph svg{ color:var(--green-300); }
+.work-tile.is-video .work-label{ color:var(--chrome-300); }
+
+/* ---- video lightbox ---- */
+.video-lightbox{
+  position:fixed; inset:0; z-index:200;
+  display:flex; align-items:center; justify-content:center;
+  padding:clamp(1rem,4vw,3rem);
+  background:rgba(6,6,7,.94); backdrop-filter:blur(10px);
+  opacity:0; transition:opacity .35s var(--ease-out);
+}
+.video-lightbox[hidden]{ display:none; }
+.video-lightbox.is-open{ opacity:1; }
+/* sizing by width alone would overflow a short window, so the third term
+   caps it against viewport height while the 16:9 ratio still holds */
+.video-lightbox-stage{
+  position:relative; width:min(1180px, 100%, calc(76vh * 16 / 9));
+  aspect-ratio:16/9; background:#000; border:1px solid var(--line-strong);
+}
+.video-lightbox-stage iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
+.video-lightbox-close{
+  position:absolute; top:clamp(.75rem,2.5vw,1.75rem); right:clamp(.75rem,2.5vw,1.75rem);
+  width:44px; height:44px; display:flex; align-items:center; justify-content:center;
+  background:transparent; border:1px solid var(--line-strong); color:var(--chrome-300);
+  cursor:pointer; transition:border-color .3s, color .3s;
+}
+.video-lightbox-close:hover{ border-color:var(--green-400); color:var(--green-100); }
+.video-lightbox-close:focus-visible{ outline:2px solid var(--green-400); outline-offset:3px; }
+.video-lightbox-close svg{ width:16px; height:16px; }
+@media (prefers-reduced-motion: reduce){
+  .video-lightbox{ transition:none; }
+}
+
 /* ============ process ============ */
 .process-list{ display:grid; grid-template-columns:repeat(4,1fr); gap:var(--sp-4); }
 .process-item{ position:relative; border-top:1px solid var(--line-strong); padding-top:var(--sp-3); display:flex; flex-direction:column; gap:.75rem; }
@@ -1287,7 +1326,12 @@ h1,h2,.section-title{
         <h2 class="section-title" id="work-title">A few frames from the archive.</h2>
       </div>
       <div class="work-grid">
-        <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel. Footage Coming Soon.</span></div></div>
+        <!-- SWAP THE REEL HERE: data-vimeo is the numeric id from the video's
+             Vimeo URL (vimeo.com/<id>). Nothing is requested from Vimeo until
+             someone presses play. -->
+        <button type="button" class="work-tile is-video" data-vimeo="123456789" data-video-title="Silver Line Studios reel">
+          <div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Studio Reel. Play.</span></div>
+        </button>
         <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel. Footage Coming Soon.</span></div></div>
         <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel. Footage Coming Soon.</span></div></div>
         <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel. Footage Coming Soon.</span></div></div>
@@ -1541,6 +1585,13 @@ h1,h2,.section-title{
     <p class="footer-meta">&copy; <span id="year"></span> Silver Line Studios. Calgary, Alberta.</p>
   </div>
 </footer>
+
+<div class="video-lightbox" id="videoLightbox" role="dialog" aria-modal="true" aria-label="Video player" hidden>
+  <button type="button" class="video-lightbox-close" id="videoClose" aria-label="Close video">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 5l14 14M19 5L5 19"/></svg>
+  </button>
+  <div class="video-lightbox-stage" id="videoStage"></div>
+</div>
 
 <script>/*!
  * GSAP 3.12.5
@@ -2165,6 +2216,67 @@ h1,h2,.section-title{
         btn.setAttribute('aria-expanded', 'true');
       }
     });
+  });
+
+  /* ---------- video lightbox ---------- */
+  var lightbox = document.getElementById('videoLightbox');
+  var videoStage = document.getElementById('videoStage');
+  var videoClose = document.getElementById('videoClose');
+  var videoTrigger = null;
+  var videoHideTimer = null;
+
+  function openVideo(trigger){
+    var id = trigger.getAttribute('data-vimeo');
+    if (!id) return;
+    if (videoHideTimer){ clearTimeout(videoHideTimer); videoHideTimer = null; }
+    videoTrigger = trigger;
+
+    var frame = document.createElement('iframe');
+    /* title/byline/portrait strip Vimeo's own overlay so the player reads as
+       part of the page rather than as someone else's; dnt=1 asks Vimeo not to
+       set tracking cookies, which keeps the embed out of consent-banner
+       territory */
+    frame.src = 'https://player.vimeo.com/video/' + encodeURIComponent(id)
+              + '?autoplay=1&title=0&byline=0&portrait=0&dnt=1';
+    frame.setAttribute('allow', 'autoplay; fullscreen; picture-in-picture');
+    frame.setAttribute('allowfullscreen', '');
+    frame.setAttribute('title', trigger.getAttribute('data-video-title') || 'Video');
+    videoStage.appendChild(frame);
+
+    lightbox.hidden = false;
+    /* the fade needs one painted frame at opacity 0 before the class lands */
+    requestAnimationFrame(function(){ lightbox.classList.add('is-open'); });
+    document.body.style.overflow = 'hidden';
+    videoClose.focus();
+  }
+
+  function closeVideo(){
+    if (lightbox.hidden) return;
+    lightbox.classList.remove('is-open');
+    /* emptying the stage is what actually stops playback - hiding the overlay
+       on its own leaves the audio running underneath */
+    videoStage.innerHTML = '';
+    document.body.style.overflow = '';
+    videoHideTimer = setTimeout(function(){
+      lightbox.hidden = true;
+      videoHideTimer = null;
+    }, reduceMotion ? 0 : 360);
+    if (videoTrigger){ videoTrigger.focus(); videoTrigger = null; }
+  }
+
+  document.querySelectorAll('[data-vimeo]').forEach(function(tile){
+    tile.addEventListener('click', function(){ openVideo(tile); });
+  });
+  videoClose.addEventListener('click', closeVideo);
+  lightbox.addEventListener('click', function(e){
+    if (e.target === lightbox) closeVideo();
+  });
+  document.addEventListener('keydown', function(e){
+    if (lightbox.hidden) return;
+    if (e.key === 'Escape'){ closeVideo(); return; }
+    /* the page behind is still in the tab order, so keep Tab on the one
+       control the overlay owns */
+    if (e.key === 'Tab'){ e.preventDefault(); videoClose.focus(); }
   });
 
   /* ---------- card tilt (mouse-driven, fine pointers only) ---------- */

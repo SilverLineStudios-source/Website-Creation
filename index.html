@@ -857,6 +857,28 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
 .work-tile.is-video .play-glyph{ border-color:var(--green-500); }
 .work-tile.is-video .play-glyph svg{ color:var(--green-300); }
 .work-tile.is-video .work-label{ color:var(--chrome-300); }
+/* isolate so the layer order below is self-contained and cannot be
+   reordered by anything outside the tile */
+.work-tile.is-video{ isolation:isolate; }
+/* the placeholder hatching has no business sitting over a real still */
+.work-tile.is-video::before{ display:none; }
+.work-thumb{ position:absolute; inset:0; z-index:0; width:100%; height:100%; object-fit:cover; }
+/* without this the glyph and label are lost in the frame; it lifts on hover
+   so the still comes forward as you reach for it */
+.work-tile.is-video::after{
+  content:''; position:absolute; inset:0; z-index:1; transition:background .35s;
+  background:linear-gradient(180deg, rgba(6,6,7,.44) 0%, rgba(6,6,7,.6) 55%, rgba(6,6,7,.8) 100%);
+}
+.work-tile.is-video:hover::after{
+  background:linear-gradient(180deg, rgba(6,6,7,.26) 0%, rgba(6,6,7,.42) 55%, rgba(6,6,7,.66) 100%);
+}
+.work-tile.is-video .work-tile-inner{ z-index:2; }
+.work-duration{
+  position:absolute; z-index:2; right:.6rem; bottom:.55rem;
+  font-size:.62rem; letter-spacing:.1em; color:var(--chrome-300);
+  padding:.2rem .45rem; border:1px solid var(--line-strong); background:rgba(6,6,7,.6);
+}
+
 .work-cell{ display:flex; flex-direction:column; gap:.75rem; margin:0; }
 .work-caption{ font-size:.8125rem; line-height:1.55; color:var(--chrome-700); }
 .work-caption b{ font-weight:500; color:var(--chrome-500); }
@@ -873,10 +895,25 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
 .video-lightbox.is-open{ opacity:1; }
 /* sizing by width alone would overflow a short window, so the third term
    caps it against viewport height while the 16:9 ratio still holds */
+.video-lightbox-inner{ width:min(1180px, 100%, calc(70vh * 16 / 9)); }
 .video-lightbox-stage{
-  position:relative; width:min(1180px, 100%, calc(76vh * 16 / 9));
+  position:relative; width:100%;
   aspect-ratio:16/9; background:#000; border:1px solid var(--line-strong);
 }
+.video-lightbox-meta{
+  display:flex; flex-wrap:wrap; gap:.4rem 1.25rem;
+  align-items:baseline; justify-content:space-between; margin-top:.85rem;
+}
+.video-lightbox-title{ font-size:.8125rem; color:var(--chrome-500); }
+/* the way out when the embed cannot load - a blocked host, an extension, a
+   sandboxed preview - and a plain convenience the rest of the time */
+.video-lightbox-link{
+  font-size:.68rem; letter-spacing:var(--track-label); text-transform:uppercase;
+  color:var(--green-300); border-bottom:1px solid var(--line-green); padding-bottom:.15rem;
+  white-space:nowrap;
+}
+.video-lightbox-link:hover{ color:var(--green-100); border-bottom-color:var(--green-400); }
+.video-lightbox-link:focus-visible{ outline:2px solid var(--green-400); outline-offset:3px; }
 .video-lightbox-stage iframe{ position:absolute; inset:0; width:100%; height:100%; border:0; }
 .video-lightbox-close{
   position:absolute; top:clamp(.75rem,2.5vw,1.75rem); right:clamp(.75rem,2.5vw,1.75rem);
@@ -1334,8 +1371,17 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
              Whichever is set, nothing is requested from the host until
              someone presses play. -->
         <figure class="work-cell">
-          <button type="button" class="work-tile is-video" data-youtube="9QioIBDVtmQ" data-video-title="F45 Training Shawnessy commercial spot">
+          <button type="button" class="work-tile is-video" data-youtube="9QioIBDVtmQ"
+                  data-video-title="F45 Training Shawnessy commercial spot"
+                  data-video-note="F45 Training Shawnessy. A commercial spot for the Calgary studio.">
+            <!-- YouTube's own still at full size. The local copy stands in when
+                 their CDN is unreachable, which is the offline case, a blocking
+                 extension, and any sandboxed preview. -->
+            <img class="work-thumb" src="https://i.ytimg.com/vi/9QioIBDVtmQ/maxresdefault.jpg"
+                 onerror="this.onerror=null;this.src='assets/reel-thumb.jpg';"
+                 alt="" aria-hidden="true" loading="lazy" decoding="async" width="1280" height="720">
             <div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">F45 Training. Play.</span></div>
+            <span class="work-duration">1:01</span>
           </button>
           <figcaption class="work-caption"><b>F45 Training Shawnessy.</b> A commercial spot for the Calgary studio.</figcaption>
         </figure>
@@ -1597,7 +1643,13 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
   <button type="button" class="video-lightbox-close" id="videoClose" aria-label="Close video">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"><path d="M5 5l14 14M19 5L5 19"/></svg>
   </button>
-  <div class="video-lightbox-stage" id="videoStage"></div>
+  <div class="video-lightbox-inner">
+    <div class="video-lightbox-stage" id="videoStage"></div>
+    <div class="video-lightbox-meta">
+      <p class="video-lightbox-title" id="videoMetaTitle"></p>
+      <a class="video-lightbox-link" id="videoMetaLink" href="#" target="_blank" rel="noopener noreferrer">Watch on YouTube</a>
+    </div>
+  </div>
 </div>
 
 <script>/*!
@@ -2229,6 +2281,8 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
   var lightbox = document.getElementById('videoLightbox');
   var videoStage = document.getElementById('videoStage');
   var videoClose = document.getElementById('videoClose');
+  var videoMetaTitle = document.getElementById('videoMetaTitle');
+  var videoMetaLink = document.getElementById('videoMetaLink');
   var videoTrigger = null;
   var videoHideTimer = null;
 
@@ -2257,6 +2311,15 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
     return null;
   }
 
+  /* where to send someone when the embed itself will not load */
+  function watchUrl(trigger){
+    var yt = trigger.getAttribute('data-youtube');
+    if (yt) return 'https://www.youtube.com/watch?v=' + encodeURIComponent(yt);
+    var vm = trigger.getAttribute('data-vimeo');
+    if (vm) return 'https://vimeo.com/' + encodeURIComponent(vm);
+    return null;
+  }
+
   function openVideo(trigger){
     var url = embedUrl(trigger);
     if (!url) return;
@@ -2271,6 +2334,16 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
     frame.setAttribute('allowfullscreen', '');
     frame.setAttribute('title', trigger.getAttribute('data-video-title') || 'Video');
     videoStage.appendChild(frame);
+
+    videoMetaTitle.textContent = trigger.getAttribute('data-video-note') || '';
+    var watch = watchUrl(trigger);
+    if (watch){
+      videoMetaLink.href = watch;
+      videoMetaLink.textContent = trigger.hasAttribute('data-youtube') ? 'Watch on YouTube' : 'Watch on Vimeo';
+      videoMetaLink.hidden = false;
+    } else {
+      videoMetaLink.hidden = true;
+    }
 
     lightbox.hidden = false;
     /* the fade needs one painted frame at opacity 0 before the class lands */
@@ -2303,9 +2376,19 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
   document.addEventListener('keydown', function(e){
     if (lightbox.hidden) return;
     if (e.key === 'Escape'){ closeVideo(); return; }
-    /* the page behind is still in the tab order, so keep Tab on the one
-       control the overlay owns */
-    if (e.key === 'Tab'){ e.preventDefault(); videoClose.focus(); }
+    if (e.key !== 'Tab') return;
+    /* the page behind is still in the tab order, so cycle Tab through the
+       overlay's own stops - the player included, or its controls would be
+       unreachable by keyboard */
+    var stops = [videoClose, videoMetaLink, videoStage.querySelector('iframe')]
+      .filter(function(el){ return el && !el.hidden; });
+    if (!stops.length) return;
+    e.preventDefault();
+    var i = stops.indexOf(document.activeElement);
+    var next = i === -1 ? 0 : i + (e.shiftKey ? -1 : 1);
+    if (next < 0) next = stops.length - 1;
+    if (next >= stops.length) next = 0;
+    stops[next].focus();
   });
 
   /* ---------- card tilt (mouse-driven, fine pointers only) ---------- */

@@ -34,7 +34,12 @@ The studio section carries the supplied on-set photograph of the founder, croppe
 from the 4534x4344 original. The first work tile plays the F45 Training Shawnessy spot in a lightbox, captioned underneath. The
 lightbox takes either host: `data-youtube="<id>"` or `data-vimeo="<id>"` on the tile, one
 attribute and nothing else. It currently carries YouTube `9QioIBDVtmQ`, served from
-youtube-nocookie.com. Nothing is requested from either host until a visitor presses play. An
+youtube-nocookie.com. The tile's still comes from YouTube's own CDN at full size, with
+`assets/reel-thumb.jpg` standing in through an `onerror` when that CDN is unreachable - offline, a
+blocking extension, a sandboxed preview. That local copy was cut from a phone screenshot and is
+only 370x208, so replacing it with the real still would be an easy win. Beyond the still, nothing
+is requested from either host until a visitor presses play, and the lightbox carries a
+watch-on-the-host link for when the embed itself is blocked. An
 unlisted or private video needs this site's domain whitelisted in its host's privacy settings or
 the embed will refuse to load. The other five tiles are still placeholders.
 

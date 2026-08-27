@@ -51,7 +51,8 @@ The grade-compare slider carries two real states of one F45 frame: `assets/grade
 camera (mean saturation 0.07, nothing above ~112 luminance - log) and `assets/grade-graded.jpg`
 after the grade (mean saturation 0.38). The two crops were registered by normalised
 cross-correlation, NCC 0.88 at 1.955 flat px per graded px, so the halves land on the same pixels
-as the handle sweeps; the window stops short of both files' burnt-in UI. **The graded half came from
+as the handle sweeps; the window stops short of both files' burnt-in UI. Graded sits on the left,
+raw on the right. **The graded half came from
 a 549px phone screenshot and is only 364px wide, so it is upscaled 3.3x on desktop and looks it.**
 Replacing it with a real 1920x1080 still is the single biggest visual win left on the page.
 

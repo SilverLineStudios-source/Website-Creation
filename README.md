@@ -19,7 +19,11 @@ slowly drifting layer, so the whole site sits in one continuous weather system.
 It was cut from the key art and given an alpha matte keyed off luminance, so it composites onto any
 background with no rectangle showing. The hero runs art direction across breakpoints the way the brand
 does: the diamond wordmark on phones, the circular lens lockup above 700px, each masked to its own
-geometry, with `<picture>` so only one file is ever fetched.
+geometry, with `<picture>` so only one file is ever fetched. In `assets/mark.png` the wordmark sat
+12-15px right of the diamond's own centre; the diamond frame was moved to meet it rather than the
+wordmark moved to meet the diamond, because the frame sits on transparency and resamples nothing,
+while the letterforms come within ~15px of the frame and could not be translated without dragging
+ghosts of its inner edge inward. The wordmark now sits within 2px of centre.
 
 **The hero** is scroll-driven: the lockup pushes forward under a focus pull and hands off to a
 canvas-drawn lens (vector, so it stays sharp) which opens its aperture and blows out to an emerald

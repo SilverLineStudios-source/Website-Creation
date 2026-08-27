@@ -31,7 +31,8 @@ project-brief form. Both the calendar and the form compose `mailto:` messages an
 since a static site has no backend to take a real booking.
 
 The studio section carries the supplied on-set photograph of the founder, cropped to the 4:5 plate
-from the 4534x4344 original. The first work tile plays Vimeo video `1221670318` in a lightbox; the id
+from the 4534x4344 original. The first work tile plays Vimeo video `1221670318` - the F45 Training Shawnessy spot - in a
+lightbox, captioned underneath; the id
 lives in one place, the `data-vimeo` attribute on that tile. Nothing is requested from Vimeo until
 a visitor presses play. If the video is unlisted or private, this site's domain has to be added to
 the video's Vimeo privacy settings or the embed will refuse to load. The other five tiles are

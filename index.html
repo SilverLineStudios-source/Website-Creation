@@ -824,7 +824,7 @@ h1,h2,.section-title{
 .grade-handle-grip i{ width:2px; height:14px; background:var(--ink); border-radius:1px; }
 
 /* ============ work grid ============ */
-.work-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp-2); }
+.work-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:var(--sp-2); align-items:start; }
 .work-tile{
   position:relative; aspect-ratio:16/10; overflow:hidden;
   background:linear-gradient(160deg,var(--ink-raised-2),rgba(11,11,12,.9) 70%);
@@ -857,6 +857,9 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
 .work-tile.is-video .play-glyph{ border-color:var(--green-500); }
 .work-tile.is-video .play-glyph svg{ color:var(--green-300); }
 .work-tile.is-video .work-label{ color:var(--chrome-300); }
+.work-cell{ display:flex; flex-direction:column; gap:.75rem; margin:0; }
+.work-caption{ font-size:.8125rem; line-height:1.55; color:var(--chrome-700); }
+.work-caption b{ font-weight:500; color:var(--chrome-500); }
 
 /* ---- video lightbox ---- */
 .video-lightbox{
@@ -1329,9 +1332,12 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
         <!-- SWAP THE REEL HERE: data-vimeo is the numeric id from the video's
              Vimeo URL (vimeo.com/<id>). Nothing is requested from Vimeo until
              someone presses play. -->
-        <button type="button" class="work-tile is-video" data-vimeo="1221670318" data-video-title="Silver Line Studios reel">
-          <div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Studio Reel. Play.</span></div>
-        </button>
+        <figure class="work-cell">
+          <button type="button" class="work-tile is-video" data-vimeo="1221670318" data-video-title="F45 Training Shawnessy commercial spot">
+            <div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">F45 Training. Play.</span></div>
+          </button>
+          <figcaption class="work-caption"><b>F45 Training Shawnessy.</b> A commercial spot for the Calgary studio.</figcaption>
+        </figure>
         <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel. Footage Coming Soon.</span></div></div>
         <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel. Footage Coming Soon.</span></div></div>
         <div class="work-tile"><div class="work-tile-inner"><span class="play-glyph"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 4l14 8-14 8V4z"/></svg></span><span class="work-label">Project Reel. Footage Coming Soon.</span></div></div>

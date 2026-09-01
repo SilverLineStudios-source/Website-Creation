@@ -1389,16 +1389,20 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
         <h2 class="section-title green-text" id="grade-title">The same shot.<br>Two different films.</h2>
         <p class="lede">Drag the line. This is the difference a grade makes, the same frame before the color work and after it.</p>
       </div>
+      <!-- The ?v= on the two frames below is deliberate. /assets/* ships with
+           Cache-Control: immutable for a year, so replacing an image in place
+           leaves anyone who already loaded the old one stuck with it. Bump the
+           number whenever either file is re-cut. -->
       <div class="grade-compare bracket-frame" id="gradeCompare">
         <i></i><i></i><i></i><i></i>
         <div class="grade-panel grade-graded" id="gradeGraded">
-          <img src="assets/grade-graded.jpg" width="1400" height="776" loading="lazy" decoding="async"
+          <img src="assets/grade-graded.jpg?v=2" width="1400" height="776" loading="lazy" decoding="async"
                draggable="false"
                alt="The same frame after the color grade: warm skin, a red rim light, deep blacks.">
           <span class="grade-tag" aria-hidden="true">GRADED</span>
         </div>
         <div class="grade-panel grade-raw">
-          <img src="assets/grade-raw.jpg" width="1400" height="776" loading="lazy" decoding="async"
+          <img src="assets/grade-raw.jpg?v=2" width="1400" height="776" loading="lazy" decoding="async"
                draggable="false"
                alt="The same frame from the F45 spot in S-Log3 straight off the camera, flat and desaturated.">
           <span class="grade-tag" aria-hidden="true">RAW</span>

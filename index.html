@@ -783,7 +783,13 @@ h1,h2,.section-title{
   border:1px solid var(--line-strong);
 }
 .grade-panel{ position:absolute; inset:0; background:var(--ink); }
-.grade-panel img{ width:100%; height:100%; object-fit:cover; }
+/* Without this the browser starts its own image drag a few pixels into a
+   swipe, fires pointercancel and takes the gesture away from the slider -
+   which reads as the handle stuttering and letting go mid-drag. */
+.grade-panel img{
+  width:100%; height:100%; object-fit:cover;
+  -webkit-user-drag:none; user-select:none; pointer-events:none;
+}
 /* the raw frame lies underneath full-bleed and the graded one is clipped over
    it, so the split reads graded-on-the-left, raw-on-the-right. whichever way
    round it goes, each tag has to sit over its own half: park a tag on the side
@@ -791,6 +797,7 @@ h1,h2,.section-title{
    to leave both of them invisible at every handle position. */
 .grade-raw{ z-index:1; }
 .grade-graded{ z-index:2; clip-path:inset(0 50% 0 0); }
+.grade-compare.is-dragging .grade-graded{ will-change:clip-path; }
 .grade-tag{
   position:absolute; top:1rem; font-size:.7rem; font-weight:500; letter-spacing:var(--track-label);
   color:var(--chrome-300); background:rgba(11,11,12,.6); padding:.35rem .7rem;
@@ -800,7 +807,7 @@ h1,h2,.section-title{
 .grade-graded .grade-tag{ left:1rem; color:var(--green-100); border-color:var(--line-green); }
 .grade-raw .grade-tag{ right:1rem; }
 .grade-handle{
-  position:absolute; top:0; bottom:0; left:50%; width:2px;
+  position:absolute; top:0; bottom:0; left:0; width:2px; will-change:transform;
   background:linear-gradient(180deg,transparent,var(--green-100) 18%,var(--chrome-100) 50%,var(--green-100) 82%,transparent);
   box-shadow:0 0 16px rgba(110,224,168,.6);
   display:flex; align-items:center; justify-content:center;
@@ -1374,11 +1381,13 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
         <i></i><i></i><i></i><i></i>
         <div class="grade-panel grade-graded" id="gradeGraded">
           <img src="assets/grade-graded.jpg" width="364" height="205" loading="lazy" decoding="async"
+               draggable="false"
                alt="The same frame after the color grade: warm skin, a red rim light, deep blacks.">
           <span class="grade-tag" aria-hidden="true">GRADED</span>
         </div>
         <div class="grade-panel grade-raw">
           <img src="assets/grade-raw.jpg" width="712" height="401" loading="lazy" decoding="async"
+               draggable="false"
                alt="A frame from the F45 spot straight off the camera, flat and desaturated.">
           <span class="grade-tag" aria-hidden="true">RAW</span>
         </div>
@@ -2085,44 +2094,75 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
       .fromTo('#statement', { autoAlpha:0, y:26 }, { autoAlpha:1, y:0, duration:.14 }, .86);
   });
 
-  /* ---------- grade compare slider ---------- */
+  /* ---------- grade compare slider ----------
+     The drag used to give out a few pixels in: the images were still natively
+     draggable, so the browser started its own image drag and fired
+     pointercancel, which ended the gesture. That is fixed on the elements
+     themselves (draggable="false" plus the CSS above) and by preventDefault
+     below. Separately, a mouse reports moves faster than the screen repaints,
+     and the old code did a getBoundingClientRect() - a forced layout - between
+     each pair of style writes. Now a move only records the pointer's x and
+     asks for a frame; the single rAF callback does one layout read and then
+     all the writes, so the work happens once per painted frame however fast
+     the events arrive. */
   (function(){
     var compare = document.getElementById('gradeCompare');
     var graded = document.getElementById('gradeGraded');
     var handle = document.getElementById('gradeHandle');
     if (!compare || !graded || !handle) return;
-    var dragging = false;
+    var dragging = false, frame = 0, pointerX = null, pct = 50;
 
-    function setPos(pct){
-      pct = Math.max(0, Math.min(100, pct));
-      graded.style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)';
-      handle.style.left = pct + '%';
-      handle.setAttribute('aria-valuenow', Math.round(pct));
-    }
-    function pctFromClientX(clientX){
+    var lastPct = -1, lastAria = -1;
+    function render(){
+      frame = 0;
       var rect = compare.getBoundingClientRect();
-      return ((clientX - rect.left) / rect.width) * 100;
+      if (pointerX !== null){
+        pct = ((pointerX - rect.left) / rect.width) * 100;
+        pointerX = null;
+      }
+      pct = Math.max(0, Math.min(100, pct));
+      /* a mouse can report several moves that land on the same subpixel; writing
+         the same values again still costs a style recalc, so skip them */
+      if (pct === lastPct) return;
+      lastPct = pct;
+      graded.style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)';
+      /* translate rather than animating `left`: the handle keeps its own
+         compositor layer instead of relaying out on every step. */
+      handle.style.transform = 'translate3d(' + (pct * rect.width / 100) + 'px,0,0)';
+      var aria = Math.round(pct);
+      if (aria !== lastAria){ handle.setAttribute('aria-valuenow', aria); lastAria = aria; }
     }
+    function schedule(){ if (!frame) frame = requestAnimationFrame(render); }
+    function trackTo(clientX){ pointerX = clientX; schedule(); }
+    function setPos(next){ pointerX = null; pct = next; schedule(); }
 
     compare.addEventListener('pointerdown', function(e){
+      e.preventDefault();               /* keep the browser from starting a drag */
       dragging = true;
+      compare.classList.add('is-dragging');
       compare.setPointerCapture(e.pointerId);
-      setPos(pctFromClientX(e.clientX));
+      trackTo(e.clientX);
     });
+    /* belt and braces: if a drag is somehow begun, refuse it */
+    compare.addEventListener('dragstart', function(e){ e.preventDefault(); });
     compare.addEventListener('pointermove', function(e){
       if (!dragging) return;
-      setPos(pctFromClientX(e.clientX));
+      trackTo(e.clientX);
     });
     ['pointerup','pointercancel','pointerleave'].forEach(function(evt){
-      compare.addEventListener(evt, function(){ dragging = false; });
+      compare.addEventListener(evt, function(){
+        dragging = false;
+        compare.classList.remove('is-dragging');
+      });
     });
     handle.addEventListener('keydown', function(e){
-      var current = parseFloat(handle.getAttribute('aria-valuenow')) || 50;
-      if (e.key === 'ArrowLeft'){ setPos(current - 5); e.preventDefault(); }
-      else if (e.key === 'ArrowRight'){ setPos(current + 5); e.preventDefault(); }
+      if (e.key === 'ArrowLeft'){ setPos(pct - 5); e.preventDefault(); }
+      else if (e.key === 'ArrowRight'){ setPos(pct + 5); e.preventDefault(); }
       else if (e.key === 'Home'){ setPos(0); e.preventDefault(); }
       else if (e.key === 'End'){ setPos(100); e.preventDefault(); }
     });
+    /* the handle's offset is in px, so it has to be recomputed on resize */
+    window.addEventListener('resize', function(){ lastPct = -1; schedule(); });
 
     setPos(50);
   })();
@@ -2541,8 +2581,12 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
   /* ---------- grade compare: focus-pull entrance ---------- */
   var gradeEl = document.querySelector('.grade-compare');
   if (gradeEl){
+    /* `filter:blur(0px)` is not the same as no filter: any filter value keeps
+       the element in a filter render pass for the rest of its life, so every
+       later repaint of the compare box pays for it. Clear the property once
+       the entrance finishes - identical to look at, far cheaper to drag. */
     if (reduceMotion){
-      gsap.set(gradeEl, { autoAlpha:1, scale:1, filter:'blur(0px)' });
+      gsap.set(gradeEl, { autoAlpha:1, scale:1, filter:'none' });
     } else {
       gsap.set(gradeEl, { autoAlpha:0, scale:.96, filter:'blur(14px)' });
       ScrollTrigger.create({
@@ -2550,7 +2594,10 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
         start:'top 80%',
         once:true,
         onEnter: function(){
-          gsap.to(gradeEl, { autoAlpha:1, scale:1, filter:'blur(0px)', duration:1, ease:'power2.out' });
+          gsap.to(gradeEl, {
+            autoAlpha:1, scale:1, filter:'blur(0px)', duration:1, ease:'power2.out',
+            onComplete: function(){ gsap.set(gradeEl, { clearProps:'filter' }); }
+          });
         }
       });
     }

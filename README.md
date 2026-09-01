@@ -37,7 +37,8 @@ flash before the page settles. Respects `prefers-reduced-motion`, which gets a c
 
 **Below the hero**: services, an interactive drag-to-compare raw-vs-graded panel for the color work,
 a rolling client strip, selected work, process, differentiators, the studio, an FAQ accordion, a booking calendar, and a
-project-brief form. Both the calendar and the form compose `mailto:` messages and say so on the page,
+project-brief form. Both the calendar and the form compose `mailto:` messages to
+`info@silverlinecreative.ca` and say so on the page,
 since a static site has no backend to take a real booking.
 
 The studio section carries the supplied on-set photograph of the founder, cropped to the 4:5 plate
@@ -168,3 +169,24 @@ and default house style work without it. The upstream repo's illustrative rule i
 were left out here since they're not read by the skill itself.
 
 Source: https://github.com/ItsssssJack/power-design (license in `.claude-plugin/third-party/power-design-LICENSE`).
+
+## Scheduling
+
+The booking request mail carries a Google Calendar template link, so a confirmed slot goes into the
+studio's calendar in one click from the email. Slot times are emitted as wall-clock plus
+`ctz=America/Edmonton` rather than UTC, which keeps daylight saving out of it. All five slots are
+tested for AM/PM conversion.
+
+**This is one-way.** The page cannot read the studio's real availability or write to the calendar
+itself - that needs a server holding an OAuth token, which a static site has nowhere to keep. The
+displayed slots are a fixed list, so two people can request the same time and neither is told.
+
+For real two-way booking, replace the hand-rolled calendar with one of:
+
+- **Google Calendar Appointment Schedule** - built into Google Calendar. A Workspace account on the
+  silverlinecreative.ca domain gets the full version, including payments and reminders. Produces a
+  booking page URL to embed.
+- **Cal.com** (open source, free tier) or **Calendly**, connected to the same Google account.
+
+Either one shows true availability, prevents double-booking, writes the event, and emails both sides.
+Hand over the booking URL and it drops into the `#book` section in place of the current calendar.

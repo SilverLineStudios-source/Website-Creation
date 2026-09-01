@@ -2136,6 +2136,37 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
     var bookingNote = document.getElementById('bookingNote');
     var STUDIO_EMAIL = 'info@silverlinecreative.ca';
     var SLOTS = ['9:00 AM', '10:30 AM', '1:00 PM', '2:30 PM', '4:00 PM'];
+
+    /* A static page cannot write to anyone's calendar - that needs a server
+       holding an OAuth token. What it can do is put a one-click event in the
+       request mail, so the studio adds a confirmed slot from the email in a
+       single tap. Google's template URL takes wall-clock times next to ctz,
+       which sidesteps doing daylight-saving arithmetic by hand. */
+    var STUDIO_TZ = 'America/Edmonton';      // Calgary
+    var MEETING_MINUTES = 60;
+    function pad2(n){ return (n < 10 ? '0' : '') + n; }
+    function slotToHM(label){
+      var m = /^(\d{1,2}):(\d{2})\s*(AM|PM)$/i.exec(String(label).trim());
+      if (!m) return null;
+      var h = (+m[1]) % 12;
+      if (/pm/i.test(m[3])) h += 12;
+      return [h, +m[2]];
+    }
+    function stampLocal(d, h, min){
+      return d.getFullYear() + pad2(d.getMonth()+1) + pad2(d.getDate())
+           + 'T' + pad2(h) + pad2(min) + '00';
+    }
+    function gcalUrl(date, slot){
+      var hm = slotToHM(slot);
+      if (!hm) return null;
+      var mins = hm[0]*60 + hm[1] + MEETING_MINUTES;
+      return 'https://calendar.google.com/calendar/render?action=TEMPLATE'
+        + '&text=' + encodeURIComponent('Consult \u2014 SilverLine Creative')
+        + '&dates=' + stampLocal(date, hm[0], hm[1]) + '/' + stampLocal(date, Math.floor(mins/60), mins%60)
+        + '&ctz=' + encodeURIComponent(STUDIO_TZ)
+        + '&details=' + encodeURIComponent('Booking request sent from silverlinecreative.ca')
+        + '&location=' + encodeURIComponent('Calgary, Alberta');
+    }
     var MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
 
     var today = new Date(); today.setHours(0,0,0,0);
@@ -2240,7 +2271,7 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
     bookingCta.addEventListener('click', function(){
       if (!selectedDate || !selectedSlot) return;
       var subject = 'Booking request: ' + longDate(selectedDate) + ' at ' + selectedSlot;
-      var body = [
+      var lines = [
         'Hi Nicolas,',
         '',
         'I would like to book a time with the studio.',
@@ -2250,7 +2281,10 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
         '',
         'A bit about the project:',
         ''
-      ].join('\n');
+      ];
+      var gcal = gcalUrl(selectedDate, selectedSlot);
+      if (gcal) lines.push('', '---', 'Studio: add this slot to Google Calendar in one click:', gcal);
+      var body = lines.join('\n');
       window.location.href = 'mailto:' + STUDIO_EMAIL
         + '?subject=' + encodeURIComponent(subject)
         + '&body=' + encodeURIComponent(body);

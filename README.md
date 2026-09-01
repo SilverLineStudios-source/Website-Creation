@@ -2,7 +2,7 @@
 
 ## Site prototype
 
-`index.html` is a one-page build for Silver Line Studios (Calgary, AB photography and video production),
+`index.html` is a one-page build for SilverLine Creative (Calgary, AB photography and video production),
 plus a small `assets/` folder. It opens standalone in any browser with no build step: fonts (Playfair
 Display, Archivo) and GSAP are embedded inline, and the only external files are three local images.
 
@@ -15,11 +15,17 @@ the functional ones.
 **Atmosphere**: two real smoke plates cut from the key art are anchored to the page edges as a fixed,
 slowly drifting layer, so the whole site sits in one continuous weather system.
 
-**Logo**: the real SL monogram (`assets/sl-mark.png`) carries the header, footer, preloader, and hero.
-It was cut from the key art and given an alpha matte keyed off luminance, so it composites onto any
-background with no rectangle showing. The hero runs art direction across breakpoints the way the brand
-does: the diamond wordmark on phones, the circular lens lockup above 700px, each masked to its own
-geometry, with `<picture>` so only one file is ever fetched. In `assets/mark.png` the wordmark sat
+**Logo**: the SL monogram (`assets/sl-mark.png`) carries the header, footer and preloader, and survived
+the rename - SL still reads for SilverLine. The diamond wordmark (`assets/mark.png`) was recut from the
+SilverLine Creative artwork; its wordmark was already centred inside the diamond to within 3px, so it
+needed none of the correction the old one did.
+Both are cut from key art with an alpha matte keyed off luminance, so they composite onto any
+background with no rectangle showing. The hero now serves one lockup at every width. It used to art
+direct: diamond on phones, a lens plate above 700px. That plate carried the old wordmark and could not
+be recut - the new artwork is a bare diamond with no barrel around it - and the scroll sequence
+directly below renders a real lens on canvas anyway, so the still one was redundant as well as wrong.
+`assets/lens.jpg` and the `<picture>` split are gone with it, along with the two-layer radial mask that
+existed only to cut that plate's rectangle away. In `assets/mark.png` the wordmark sat
 12-15px right of the diamond's own centre; the diamond frame was moved to meet it rather than the
 wordmark moved to meet the diamond, because the frame sits on transparency and resamples nothing,
 while the letterforms come within ~15px of the frame and could not be translated without dragging

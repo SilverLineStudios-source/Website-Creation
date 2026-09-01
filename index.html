@@ -3,21 +3,21 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>Silver Line Studios</title>
-<meta name="description" content="Every story holds a silver lining. Silver Line Studios is a photography and video production company in Calgary, Alberta, making commercial films, branded content, portraits, and event coverage." />
+<title>SilverLine Creative</title>
+<meta name="description" content="Every story holds a silver lining. SilverLine Creative is a photography and video production company in Calgary, Alberta, making commercial films, branded content, portraits, and event coverage." />
 <meta name="theme-color" content="#0b0b0c" />
-<meta property="og:title" content="Silver Line Studios" />
+<meta property="og:title" content="SilverLine Creative" />
 <meta property="og:description" content="Every story holds a silver lining. Photography and video production, Calgary, Alberta." />
 <meta property="og:type" content="website" />
 <!-- og:image needs the absolute live URL once a domain is attached -->
-<meta property="og:image" content="assets/lens.jpg" />
+<meta property="og:image" content="assets/og-card.jpg" />
 <meta name="twitter:card" content="summary_large_image" />
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230b0b0c'/%3E%3Cg transform='translate(50 50) rotate(45)' fill='none' stroke='%23c6cad1' stroke-width='6'%3E%3Crect x='-28' y='-28' width='56' height='56'/%3E%3C/g%3E%3Cg transform='translate(50 50) rotate(45)' fill='none' stroke='%23149b57' stroke-width='5'%3E%3Crect x='-14' y='-14' width='28' height='28'/%3E%3C/g%3E%3C/svg%3E" />
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "LocalBusiness",
-  "name": "Silver Line Studios",
+  "name": "SilverLine Creative Inc.",
   "founder": { "@type": "Person", "name": "Nicolas Rufiange" },
   "telephone": "+1-403-804-6191",
   "email": "silverlineproductions.ca@gmail.com",
@@ -45,7 +45,7 @@
 </script>
 <style>
 /* ============================================================
-   SILVER LINE STUDIOS — design tokens
+   SILVERLINE CREATIVE — design tokens
    Deliberate single-world dark treatment: this is a cinema brand,
    not a UI with a light/dark preference, so the palette is fixed
    and painted explicitly rather than following host theme.
@@ -589,33 +589,16 @@ h1,h2,.section-title{
   margin-top:clamp(.5rem,1.6vh,1.4rem);
   /* the vh cap matters: on a laptop-height window the stack would otherwise
      run past the viewport and collide with the scroll cue */
-  width:min(86vw,760px,72vh);
+  width:min(62vw,430px,42vh);
   will-change:transform,filter,opacity;
 }
 /* Every width override lives below the base rule, not above it. Media queries
    add no specificity, so an override written earlier in the file silently
    loses to the base declaration and does nothing at all. */
 @media (max-width:700px){
-  .hero-lockup{ width:min(84vw,480px,52vh); }
+  .hero-lockup{ width:min(78vw,400px,40vh); }
 }
 .hero-lockup img{ width:100%; height:auto; }
-/* Scoped to the breakpoint that actually serves the lens plate. Written as a
-   max-width override instead, it would lose to this rule on source order,
-   since media queries carry no extra specificity, and the phone's diamond
-   (which ships its own alpha) would get masked to the lens geometry. */
-@media (min-width:701px){
-  .hero-lockup img{
-    /* the plate is cut from dark key art, so mask everything except the
-       barrel and its flare, or its own background reads as a box. Layer one
-       hugs the lens circle, layer two keeps the anamorphic streak. */
-    -webkit-mask-image:
-      radial-gradient(ellipse 30% 50% at 50% 49%, #000 88%, transparent 100%),
-      radial-gradient(ellipse 50% 7% at 50% 55%, #000 18%, transparent 100%);
-    mask-image:
-      radial-gradient(ellipse 30% 50% at 50% 49%, #000 88%, transparent 100%),
-      radial-gradient(ellipse 50% 7% at 50% 55%, #000 18%, transparent 100%);
-  }
-}
 .hero-ctas{ display:flex; gap:1rem; justify-content:center; margin-top:clamp(1.5rem,4vh,3rem); flex-wrap:wrap; }
 
 .scroll-cue{
@@ -643,7 +626,7 @@ h1,h2,.section-title{
    artwork gives up the room rather than the type. */
 @media (max-height:820px){
   .hero-kicker{ font-size:clamp(1.05rem,.9rem + .8vw,1.55rem); margin-top:clamp(.7rem,1.6vh,1.1rem); }
-    .hero-lockup{ width:min(86vw,760px,54vh); }
+    .hero-lockup{ width:min(62vw,430px,36vh); }
   .hero-ctas{ margin-top:clamp(1rem,2.4vh,1.6rem); }
 }
 
@@ -1214,9 +1197,9 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
 
 <header class="site-header" id="siteHeader">
   <div class="wrap header-inner">
-    <a class="brand" href="#hero" aria-label="Silver Line Studios, home">
+    <a class="brand" href="#hero" aria-label="SilverLine Creative, home">
       <img class="brand-mark" src="assets/sl-mark.png" width="216" height="180" alt="" aria-hidden="true" decoding="async">
-      <span class="brand-word chrome-text">Silver Line <em>Studios</em></span>
+      <span class="brand-word chrome-text">SilverLine <em>Creative</em></span>
     </a>
     <nav class="main-nav" aria-label="Primary">
       <ul>
@@ -1271,12 +1254,12 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
       <div class="hero-content" id="heroContent">
         <p class="hero-kicker chrome-text">Every story holds<br>a silver lining.</p>
         <h1 class="hero-lockup">
-          <picture>
-            <!-- the brand runs the diamond wordmark on phones and the lens
-                 lockup on wider screens; only one file is ever fetched -->
-            <source media="(max-width:700px)" srcset="assets/mark.png" width="646" height="586">
-            <img src="assets/lens.jpg" width="810" height="480" alt="Silver Line Studios" fetchpriority="high" decoding="async">
-          </picture>
+          <!-- one lockup at every size now. the wide breakpoint used to serve
+               a lens plate cut from key art; that plate carried the old
+               wordmark, and the scroll sequence right below already renders a
+               real lens on canvas, so the still one was both wrong and
+               redundant. -->
+          <img src="assets/mark.png" width="672" height="616" alt="SilverLine Creative" fetchpriority="high" decoding="async">
         </h1>
         <p class="hero-kicker is-green green-text">Let us tell yours.</p>
         <div class="hero-ctas">
@@ -1501,7 +1484,7 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
         <div class="studio-copy">
           <p class="eyebrow">Calgary, Alberta</p>
           <h2 class="section-title green-text" id="studio-title" style="margin-block:1.25rem 1.5rem;">A small crew,<br>on purpose.</h2>
-          <p>Silver Line Studios is a photography and video production company serving clients across Alberta. We create commercial films, branded content, portraits, and event coverage.</p>
+          <p>SilverLine Creative is a photography and video production company serving clients across Alberta. We create commercial films, branded content, portraits, and event coverage.</p>
           <p>It is founder-led by Nicolas Rufiange, and we take a limited number of projects at a time so every one gets a director's level of attention, from first concept to final color.</p>
         </div>
         <figure class="studio-portrait bracket-frame">
@@ -1676,7 +1659,7 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
   <div class="wrap footer-inner">
     <div class="footer-brand">
       <img class="brand-mark is-small" src="assets/sl-mark.png" width="216" height="180" alt="" aria-hidden="true" decoding="async" loading="lazy">
-      Silver Line Studios
+      SilverLine Creative
     </div>
     <nav class="footer-nav" aria-label="Footer">
       <a href="#work">Work</a>
@@ -1686,7 +1669,7 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
       <a href="#book">Book</a>
       <a href="#contact">Contact</a>
     </nav>
-    <p class="footer-meta">&copy; <span id="year"></span> Silver Line Studios. Calgary, Alberta.</p>
+    <p class="footer-meta">&copy; <span id="year"></span> SilverLine Creative Inc. Calgary, Alberta.</p>
   </div>
 </footer>
 

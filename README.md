@@ -41,7 +41,7 @@ project-brief form. Both the calendar and the form compose `mailto:` messages to
 `info@silverlinecreative.ca` and say so on the page,
 since a static site has no backend to take a real booking.
 
-The studio section carries the supplied on-set photograph of the founder, cropped to the 4:5 plate
+The studio section carries the supplied on-set photograph of Nicolas, cropped to the 4:5 plate
 from the 4534x4344 original. The first work tile plays the F45 Training Shawnessy spot in a lightbox, captioned underneath. The
 lightbox takes either host: `data-youtube="<id>"` or `data-vimeo="<id>"` on the tile, one
 attribute and nothing else. It currently carries YouTube `9QioIBDVtmQ`, served from

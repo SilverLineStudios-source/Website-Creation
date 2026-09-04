@@ -1864,16 +1864,26 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
      would otherwise keep that version. Bump on every re-cut. */
   barrelImg.src = 'assets/lens-barrel.webp?v=2';
 
-  /* Out-of-focus highlights inside the opening: [angle, distance, size, alpha],
-     fixed rather than random so they hold still between frames instead of
-     boiling. Distance and size are fractions of the opening, so the field
-     grows with the iris. */
-  var BOKEH = [
-    [0.35, 0.30, 0.30, 0.85], [1.55, 0.52, 0.20, 0.60], [2.60, 0.24, 0.24, 0.72],
-    [3.55, 0.60, 0.16, 0.48], [4.35, 0.34, 0.19, 0.66], [5.30, 0.55, 0.13, 0.42],
-    [0.95, 0.68, 0.11, 0.34], [2.05, 0.72, 0.09, 0.30], [4.90, 0.14, 0.15, 0.55],
-    [3.05, 0.44, 0.12, 0.44], [5.85, 0.36, 0.10, 0.38], [1.15, 0.12, 0.13, 0.50]
-  ];
+  /* Out-of-focus highlights inside the opening: [angle, distance, radius, alpha].
+     Sizes and spread are taken from a photograph of a real lens rather than
+     chosen: 72 highlights across the opening, radius median 2.5% of it with a
+     long tail, and distance from centre skewed outward (median 0.80). Twelve
+     evenly spaced discs all of one size is what made the old field read as
+     drawn instead of photographed. Generated once from a fixed seed so they
+     hold still between frames rather than boiling. */
+  var BOKEH = (function(){
+    var out = [], seed = 20260901;
+    function rnd(){ seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }
+    for (var i = 0; i < 64; i++){
+      out.push([
+        rnd() * Math.PI * 2,                        /* angle */
+        Math.pow(rnd(), 0.38) * 1.03,               /* distance, skewed to the rim */
+        0.010 + Math.pow(rnd(), 3.0) * 0.13,        /* radius: mostly small, few large */
+        0.30 + rnd() * 0.70                         /* alpha */
+      ]);
+    }
+    return out;
+  })();
 
   function drawLens(t, spin){
     lastT = t; lastSpin = spin || 0;
@@ -1971,7 +1981,13 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
        still on screen, so it is the only window where the opening can be
        watched happening. */
     var BLADES = 9;
-    var openness = Math.min(1, glow * 0.88 + bloom * 0.32);
+    /* Measured on the real page: the blade ring still fits the viewport up to
+       about t=0.52, and the canvas has faded out entirely by t=0.76. The old
+       curve reached 0.88 at t=0.38 and only completed at t=0.79 - long after
+       the blades had left frame - so the iris was never seen fully open and
+       read as jammed. This completes at t=0.48, accelerating rather than
+       easing off, so it finishes just as the rim sweeps past the edge. */
+    var openness = Math.min(1, Math.pow(Math.max(0, t - 0.02) / 0.46, 1.35));
     var innerR = HOLE * openness;
     var irisRot = spin * 0.35 + t * 0.9;
 
@@ -1993,7 +2009,7 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
     ctx.fill('evenodd');
 
     /* a lit edge along each blade, or the whole iris reads as one flat ring */
-    ctx.strokeStyle = 'rgba(190,200,208,.18)';
+    ctx.strokeStyle = 'rgba(190,200,208,' + (0.18 * (1 - openness)).toFixed(3) + ')';
     ctx.lineWidth = 1.2;
     for (var e = 0; e < BLADES; e++){
       var ea = irisRot + (e / BLADES) * TAU;
@@ -2027,21 +2043,26 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
       var kx = Math.cos(k[0] + spin * 0.18) * k[1] * innerR;
       var ky = Math.sin(k[0] + spin * 0.18) * k[1] * innerR;
       var kr = k[2] * innerR;
-      if (kr < 0.4) continue;
-      /* They fade as the late bloom rises. Their radius is a fraction of the
-         opening, so once the canvas is scaled 20x an undimmed disc covers a
-         quarter of the viewport and stops reading as light at all. */
-      var kAlpha = k[3] * (0.22 + glow * 0.52) * (1 - bloom * 0.88);
-      var kg = ctx.createRadialGradient(kx, ky, kr * 0.15, kx, ky, kr);
-      kg.addColorStop(0,   'rgba(168,255,208,' + kAlpha + ')');
-      kg.addColorStop(.70, 'rgba(61,220,144,'  + (kAlpha * 0.72) + ')');
-      /* the brighter rim is what makes a disc read as out-of-focus light
-         rather than as a painted dot */
-      kg.addColorStop(.93, 'rgba(96,238,170,'  + (kAlpha * 0.80) + ')');
-      kg.addColorStop(1,   'rgba(20,155,87,0)');
-      ctx.fillStyle = kg;
+      if (kr < 0.35) continue;
+      /* They dim as the late bloom rises: their radius is a fraction of the
+         opening, so at 20x an undimmed disc stops reading as light at all. */
+      var kAlpha = k[3] * (0.24 + glow * 0.55) * (1 - bloom * 0.62);
       ctx.beginPath();
       ctx.arc(kx, ky, kr, 0, TAU);
+      if (kr < 2.5){
+        /* Below a couple of pixels a gradient is invisible and only costs
+           time, and most of this field is deliberately that small. */
+        ctx.fillStyle = 'rgba(150,250,198,' + (kAlpha * 0.9).toFixed(3) + ')';
+      } else {
+        var kg = ctx.createRadialGradient(kx, ky, kr * 0.15, kx, ky, kr);
+        kg.addColorStop(0,   'rgba(168,255,208,' + kAlpha + ')');
+        kg.addColorStop(.70, 'rgba(61,220,144,'  + (kAlpha * 0.70) + ')');
+        /* the brighter rim is what makes a disc read as out-of-focus light
+           rather than as a painted dot */
+        kg.addColorStop(.93, 'rgba(96,238,170,'  + (kAlpha * 0.82) + ')');
+        kg.addColorStop(1,   'rgba(20,155,87,0)');
+        ctx.fillStyle = kg;
+      }
       ctx.fill();
     }
 

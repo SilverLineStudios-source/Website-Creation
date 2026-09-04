@@ -1985,9 +1985,14 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
        about t=0.52, and the canvas has faded out entirely by t=0.76. The old
        curve reached 0.88 at t=0.38 and only completed at t=0.79 - long after
        the blades had left frame - so the iris was never seen fully open and
-       read as jammed. This completes at t=0.48, accelerating rather than
-       easing off, so it finishes just as the rim sweeps past the edge. */
-    var openness = Math.min(1, Math.pow(Math.max(0, t - 0.02) / 0.46, 1.35));
+       read as jammed.
+
+       Completing at t=0.48 was still too late to watch: at the point the
+       timecode reads 00:00:04:10 - t=0.378, where the barrel still fills the
+       frame at about 1.4x - it was only 71% open. It now finishes at t=0.34,
+       while the lens is still large and square on, so the last of the travel
+       is the part you actually see. */
+    var openness = Math.min(1, Math.pow(Math.max(0, t - 0.02) / 0.32, 1.25));
     var innerR = HOLE * openness;
     var irisRot = spin * 0.35 + t * 0.9;
 

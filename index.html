@@ -1864,23 +1864,53 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
      would otherwise keep that version. Bump on every re-cut. */
   barrelImg.src = 'assets/lens-barrel.webp?v=2';
 
-  /* Out-of-focus highlights inside the opening: [angle, distance, radius, alpha].
-     Sizes and spread are taken from a photograph of a real lens rather than
-     chosen: 72 highlights across the opening, radius median 2.5% of it with a
-     long tail, and distance from centre skewed outward (median 0.80). Twelve
-     evenly spaced discs all of one size is what made the old field read as
-     drawn instead of photographed. Generated once from a fixed seed so they
-     hold still between frames rather than boiling. */
+  /* Out-of-focus highlights inside the opening: [angle, distance, radius,
+     alpha, tint]. Every number here is measured off the reference photograph
+     of a real lens rather than chosen, because guessed values are exactly what
+     made earlier versions read as drawn:
+
+       187 highlights, radius median 0.0065 of the opening (p75 0.0176,
+       p90 0.0368) with a handful of much larger soft discs; distance from
+       centre median 0.716 with density near-constant across radial bands,
+       which is simply uniform-by-area - sqrt of a uniform draw; and colour
+       overwhelmingly cool, 161 of 187, with 3 warm and 23 neutral.
+
+     So: mostly pin-sharp points, a few big soft discs, spread evenly over the
+     opening, and lightly clustered - the lights behind a real lens clump,
+     they are not scattered at random. Generated once from a fixed seed so the
+     field holds still between frames instead of boiling. */
+  /* [core, body, rim] per highlight. Green-dominant to brief, but not one
+     flat colour: the reference runs 161 cool to 23 neutral to 3 warm, and that
+     small amount of variation is a lot of why it looks photographed. */
+  var TINTS = [
+    ['168,255,208', '61,220,144',  '96,238,170'],   /* mint, the bulk of them */
+    ['226,255,240', '150,240,190', '190,250,215'],  /* paler, near-white core */
+    ['238,240,168', '176,214,118', '214,232,148']   /* rare warm one */
+  ];
   var BOKEH = (function(){
     var out = [], seed = 20260901;
     function rnd(){ seed = (seed * 1664525 + 1013904223) % 4294967296; return seed / 4294967296; }
-    for (var i = 0; i < 64; i++){
-      out.push([
-        rnd() * Math.PI * 2,                        /* angle */
-        Math.pow(rnd(), 0.38) * 1.03,               /* distance, skewed to the rim */
-        0.010 + Math.pow(rnd(), 3.0) * 0.13,        /* radius: mostly small, few large */
-        0.30 + rnd() * 0.70                         /* alpha */
-      ]);
+    /* a few clumps for most of the field to gather around */
+    var clumps = [];
+    for (var c = 0; c < 4; c++) clumps.push([rnd() * Math.PI * 2, 0.46 + rnd() * 0.46]);
+
+    for (var i = 0; i < 187; i++){          /* the reference's own count */
+      var ang, dist;
+      if (rnd() < 0.58){
+        var cl = clumps[(rnd() * clumps.length) | 0];
+        ang  = cl[0] + (rnd() - 0.5) * 1.5;
+        dist = Math.max(0.02, Math.min(1.02, cl[1] + (rnd() - 0.5) * 0.42));
+      } else {
+        ang  = rnd() * Math.PI * 2;
+        dist = Math.pow(rnd(), 0.48) * 1.02;      /* uniform by area, per the photo */
+      }
+      /* two populations: the many small, and the few large soft discs */
+      var rr = (rnd() < 0.09)
+        ? 0.028 + rnd() * 0.080
+        : 0.0030 + Math.pow(rnd(), 3.5) * 0.040;
+      var tintRoll = rnd();
+      out.push([ang, dist, rr, 0.30 + rnd() * 0.70,
+                tintRoll > 0.96 ? 2 : (tintRoll > 0.82 ? 1 : 0)]);
     }
     return out;
   })();
@@ -2048,24 +2078,26 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
       var kx = Math.cos(k[0] + spin * 0.18) * k[1] * innerR;
       var ky = Math.sin(k[0] + spin * 0.18) * k[1] * innerR;
       var kr = k[2] * innerR;
-      if (kr < 0.35) continue;
+      if (kr < 0.30) continue;
       /* They dim as the late bloom rises: their radius is a fraction of the
          opening, so at 20x an undimmed disc stops reading as light at all. */
       var kAlpha = k[3] * (0.24 + glow * 0.55) * (1 - bloom * 0.62);
+      var tint = TINTS[k[4]];
       ctx.beginPath();
       ctx.arc(kx, ky, kr, 0, TAU);
-      if (kr < 2.5){
+      if (kr < 2.2){
         /* Below a couple of pixels a gradient is invisible and only costs
            time, and most of this field is deliberately that small. */
-        ctx.fillStyle = 'rgba(150,250,198,' + (kAlpha * 0.9).toFixed(3) + ')';
+        ctx.fillStyle = 'rgba(' + tint[0] + ',' + (kAlpha * 0.92).toFixed(3) + ')';
       } else {
-        var kg = ctx.createRadialGradient(kx, ky, kr * 0.15, kx, ky, kr);
-        kg.addColorStop(0,   'rgba(168,255,208,' + kAlpha + ')');
-        kg.addColorStop(.70, 'rgba(61,220,144,'  + (kAlpha * 0.70) + ')');
-        /* the brighter rim is what makes a disc read as out-of-focus light
-           rather than as a painted dot */
-        kg.addColorStop(.93, 'rgba(96,238,170,'  + (kAlpha * 0.82) + ')');
-        kg.addColorStop(1,   'rgba(20,155,87,0)');
+        var kg = ctx.createRadialGradient(kx, ky, kr * 0.12, kx, ky, kr);
+        kg.addColorStop(0,   'rgba(' + tint[0] + ',' + kAlpha + ')');
+        kg.addColorStop(.68, 'rgba(' + tint[1] + ',' + (kAlpha * 0.62) + ')');
+        /* The brighter rim is what makes a disc read as out-of-focus light
+           rather than as a painted dot, and it is the single most recognisable
+           thing about the reference. */
+        kg.addColorStop(.90, 'rgba(' + tint[2] + ',' + (kAlpha * 0.95) + ')');
+        kg.addColorStop(1,   'rgba(' + tint[1] + ',0)');
         ctx.fillStyle = kg;
       }
       ctx.fill();

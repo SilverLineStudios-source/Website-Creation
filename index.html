@@ -1859,7 +1859,10 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
     barrelReady = true;
     drawLens(lastT, lastSpin);
   };
-  barrelImg.src = 'assets/lens-barrel.webp';
+  /* ?v= because /assets/* is served immutable for a year: the first push of
+     this file still carried the maker's branding, and anyone who loaded it
+     would otherwise keep that version. Bump on every re-cut. */
+  barrelImg.src = 'assets/lens-barrel.webp?v=2';
 
   /* Out-of-focus highlights inside the opening: [angle, distance, size, alpha],
      fixed rather than random so they hold still between frames instead of

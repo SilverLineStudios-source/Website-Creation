@@ -664,12 +664,13 @@ h1,h2,.section-title{
 .hud-rec i{ width:7px; height:7px; border-radius:50%; background:#e6484f; animation:recBlink 1.1s steps(2) infinite; }
 @keyframes recBlink{ 50%{ opacity:.15; } }
 
-/* the blow-out at the top of the aperture: emerald burning to white,
-   never a flat white card */
+/* The blow-out at the top of the aperture. The core used to be pure white;
+   it is now the palest mint the palette holds, so the light coming through
+   the iris stays green all the way through rather than washing out. */
 .whiteout{
   position:absolute; inset:0; z-index:5; opacity:0; pointer-events:none;
   background:
-    radial-gradient(circle at 50% 50%, #ffffff 0%, #e8fff3 22%, var(--green-300) 52%, var(--green-700) 78%, var(--green-900) 100%);
+    radial-gradient(circle at 50% 50%, #eafff4 0%, var(--green-100) 20%, var(--green-300) 48%, var(--green-500) 70%, var(--green-900) 100%);
 }
 
 /* signature viewfinder frame — draws itself in as the hero enters */
@@ -685,7 +686,7 @@ h1,h2,.section-title{
 /* diagonal light sweep during the lens zoom */
 .light-sweep{
   position:absolute; inset:-20% -60%; z-index:2; pointer-events:none;
-  background:linear-gradient(115deg, transparent 40%, rgba(110,224,168,.06) 49%, rgba(226,255,240,.15) 50%, rgba(110,224,168,.06) 51%, transparent 60%);
+  background:linear-gradient(115deg, transparent 40%, rgba(110,224,168,.07) 49%, rgba(201,251,223,.16) 50%, rgba(110,224,168,.07) 51%, transparent 60%);
   opacity:0; transform:translateX(-30%);
 }
 
@@ -1849,6 +1850,28 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
   };
   markImg.src = 'assets/mark.png';
 
+  /* The barrel is now a photograph of the 85mm rather than rings drawn by
+     hand. Its centre has been cut out to transparency, so the iris below can
+     still be animated in the hole where the real blades sat. */
+  var barrelImg = new Image();
+  var barrelReady = false;
+  barrelImg.onload = function(){
+    barrelReady = true;
+    drawLens(lastT, lastSpin);
+  };
+  barrelImg.src = 'assets/lens-barrel.webp';
+
+  /* Out-of-focus highlights inside the opening: [angle, distance, size, alpha],
+     fixed rather than random so they hold still between frames instead of
+     boiling. Distance and size are fractions of the opening, so the field
+     grows with the iris. */
+  var BOKEH = [
+    [0.35, 0.30, 0.30, 0.85], [1.55, 0.52, 0.20, 0.60], [2.60, 0.24, 0.24, 0.72],
+    [3.55, 0.60, 0.16, 0.48], [4.35, 0.34, 0.19, 0.66], [5.30, 0.55, 0.13, 0.42],
+    [0.95, 0.68, 0.11, 0.34], [2.05, 0.72, 0.09, 0.30], [4.90, 0.14, 0.15, 0.55],
+    [3.05, 0.44, 0.12, 0.44], [5.85, 0.36, 0.10, 0.38], [1.15, 0.12, 0.13, 0.50]
+  ];
+
   function drawLens(t, spin){
     lastT = t; lastSpin = spin || 0;
     /* t = 0..1 aperture progress, spin = barrel rotation in radians */
@@ -1857,9 +1880,27 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
     var TAU = Math.PI * 2;
     spin = spin || 0;
 
-    /* Machined barrel, chrome cooling into the brand's emerald. The knurling
-       ticks are what make the rotation legible: concentric circles alone look
-       identical however far they have turned. */
+    /* Where the photograph's glass stops and the iris begins. The cut-out in
+       the asset was made at this same fraction, so the blades meet the glass
+       exactly instead of overlapping it or leaving a gap. */
+    var HOLE = r * 0.385;
+
+    if (barrelReady){
+      /* the interior, so the cut-out centre never shows the page through it */
+      ctx.beginPath();
+      ctx.arc(cx, cy, HOLE + 2, 0, TAU);
+      ctx.fillStyle = '#07100b';
+      ctx.fill();
+      ctx.save();
+      ctx.translate(cx, cy);
+      ctx.rotate(spin);
+      var dia = r * 2.02;
+      ctx.drawImage(barrelImg, -dia / 2, -dia / 2, dia, dia);
+      ctx.restore();
+    } else {
+    /* Fallback barrel, kept so the sequence still reads if the photograph has
+       not arrived yet. The knurling ticks are what make the rotation legible:
+       concentric circles alone look identical however far they have turned. */
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(spin);
@@ -1884,7 +1925,7 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
     }
     ctx.restore();
 
-    /* Coated glass. The emerald is a tight off-axis coating flare only: the
+    /* Coated glass, fallback only. The emerald is a tight off-axis flare: the
        optical centre stays near-black, because at full zoom that centre is
        what fills the whole viewport, and a mid-green there reads as mud. */
     var grad = ctx.createRadialGradient(cx - r * .32, cy - r * .34, r * .06, cx, cy, r);
@@ -1896,6 +1937,7 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
     ctx.arc(cx, cy, r - 44, 0, Math.PI * 2);
     ctx.fillStyle = grad;
     ctx.fill();
+    }
 
     /* Two stages of light, because the barrel is only in frame for the first
        third of the push: past about 3x it has travelled outside the viewport.
@@ -1918,77 +1960,101 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
        Most of the travel sits in the glow stage on purpose: that is the only
        window where the blades are actually on screen, so it is the only
        window where the opening can be watched happening. */
-    var blades = 8;
-    var openness = .28 + glow * .52 + bloom * .22;
-    var innerR = (r - 44) * openness * .92;
+    /* The iris. It starts fully shut and opens as the push begins, so the
+       mark is revealed through it rather than sitting in the middle from the
+       first frame. The travel is tied to the light rather than to the scroll,
+       so the two do not run on separate clocks, and most of it happens during
+       the glow stage on purpose: that is the only window where the blades are
+       still on screen, so it is the only window where the opening can be
+       watched happening. */
+    var BLADES = 9;
+    var openness = Math.min(1, glow * 0.88 + bloom * 0.32);
+    var innerR = HOLE * openness;
+    var irisRot = spin * 0.35 + t * 0.9;
+
     ctx.save();
     ctx.translate(cx, cy);
-    for (var b = 0; b < blades; b++){
-      var a0 = (b / blades) * TAU + spin * 0.55 + t * 1.4;
-      var a1 = a0 + (TAU / blades) * 1.18;
-      ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.arc(0, 0, r - 40, a0, a1);
+    ctx.beginPath();
+    ctx.arc(0, 0, HOLE + 1.5, 0, TAU);
+    if (innerR > 0.5){
+      /* A real iris opens as a polygon, not a circle. The straight blade
+         edges are most of what makes this read as a lens and not a hole. */
+      for (var b = 0; b < BLADES; b++){
+        var ba = irisRot + (b / BLADES) * TAU;
+        if (b === 0) ctx.moveTo(Math.cos(ba) * innerR, Math.sin(ba) * innerR);
+        else ctx.lineTo(Math.cos(ba) * innerR, Math.sin(ba) * innerR);
+      }
       ctx.closePath();
-      ctx.fillStyle = 'rgba(4,5,6,.92)';
-      ctx.fill();
-      /* a lit edge on each blade, or the blades and the opening are both
-         near-black and the aperture reads as one flat disc */
-      ctx.strokeStyle = 'rgba(198,202,209,.16)';
-      ctx.lineWidth = 1.5;
+    }
+    ctx.fillStyle = '#0a0e0c';
+    ctx.fill('evenodd');
+
+    /* a lit edge along each blade, or the whole iris reads as one flat ring */
+    ctx.strokeStyle = 'rgba(190,200,208,.18)';
+    ctx.lineWidth = 1.2;
+    for (var e = 0; e < BLADES; e++){
+      var ea = irisRot + (e / BLADES) * TAU;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(ea) * innerR, Math.sin(ea) * innerR);
+      ctx.lineTo(Math.cos(ea + 0.62) * (HOLE + 1), Math.sin(ea + 0.62) * (HOLE + 1));
       ctx.stroke();
     }
-    /* The opening. Past roughly 12x the viewport shows a single flat colour
-       whatever is drawn here, so that colour has to stay dark and read as
-       depth, which is why the bloom above is held back so long. */
-    ctx.beginPath();
-    ctx.arc(0, 0, innerR, 0, Math.PI * 2);
-    var centerGrad = ctx.createRadialGradient(0, 0, 0, 0, 0, innerR || 1);
-    /* the glow term is kept small here: this fill becomes the whole viewport
-       once we are inside, and lifting it much would wash out the dark middle */
-    centerGrad.addColorStop(0, 'rgba(236,255,246,' + (0.06 + glow * 0.14 + bloom * 0.80) + ')');
-    centerGrad.addColorStop(.4, 'rgba(110,224,168,' + (0.03 + glow * 0.09 + bloom * 0.62) + ')');
-    centerGrad.addColorStop(1, 'rgba(20,155,87,' + (0.02 + glow * 0.04 + bloom * 0.22) + ')');
-    ctx.fillStyle = centerGrad;
-    ctx.fill();
 
-    /* What is actually inside the lens. Drawn AFTER the blades and the
-       opening fill, clipped to the aperture: anything drawn before them is
-       painted over by the blades and never seen. Vector, so it stays sharp
-       all the way through the zoom, unlike a raster would. */
+    /* What is inside the lens, clipped to the opening. Drawn AFTER the blades:
+       anything drawn before them is painted over and never seen. */
     ctx.save();
     ctx.beginPath();
-    ctx.arc(0, 0, innerR, 0, TAU);
+    ctx.arc(0, 0, Math.max(0.5, innerR), 0, TAU);
     ctx.clip();
 
-    /* light fanning out from behind the mark, counter-rotating against
-       the barrel so the assembly reads as two moving parts */
-    ctx.save();
-    ctx.rotate(-spin * 0.4);
-    for (var ray = 0; ray < 12; ray++){
-      var ra = (ray / 12) * TAU;
-      var rg = ctx.createLinearGradient(0, 0, Math.cos(ra) * innerR, Math.sin(ra) * innerR);
-      rg.addColorStop(0, 'rgba(226,255,240,' + (0.1 + glow * 0.22 + bloom * 0.3) + ')');
-      rg.addColorStop(1, 'rgba(20,155,87,0)');
-      ctx.strokeStyle = rg;
-      ctx.lineWidth = innerR * 0.055;
+    /* The light coming through is a green bokeh field rather than a white
+       blow-out. Past roughly 12x the viewport shows whatever is here as one
+       flat colour, so the base stays dark and reads as depth while the
+       highlights carry the brightness. */
+    var lift = 0.08 + glow * 0.26 + bloom * 0.72;
+    var base = ctx.createRadialGradient(0, 0, 0, 0, 0, Math.max(1, innerR));
+    base.addColorStop(0,   'rgba(110,224,168,' + (0.10 + lift * 0.46) + ')');
+    base.addColorStop(.55, 'rgba(20,155,87,'   + (0.07 + lift * 0.30) + ')');
+    base.addColorStop(1,   'rgba(5,24,15,'     + (0.50 + lift * 0.18) + ')');
+    ctx.fillStyle = base;
+    ctx.fill();
+
+    for (var q = 0; q < BOKEH.length; q++){
+      var k = BOKEH[q];
+      var kx = Math.cos(k[0] + spin * 0.18) * k[1] * innerR;
+      var ky = Math.sin(k[0] + spin * 0.18) * k[1] * innerR;
+      var kr = k[2] * innerR;
+      if (kr < 0.4) continue;
+      /* They fade as the late bloom rises. Their radius is a fraction of the
+         opening, so once the canvas is scaled 20x an undimmed disc covers a
+         quarter of the viewport and stops reading as light at all. */
+      var kAlpha = k[3] * (0.22 + glow * 0.52) * (1 - bloom * 0.88);
+      var kg = ctx.createRadialGradient(kx, ky, kr * 0.15, kx, ky, kr);
+      kg.addColorStop(0,   'rgba(168,255,208,' + kAlpha + ')');
+      kg.addColorStop(.70, 'rgba(61,220,144,'  + (kAlpha * 0.72) + ')');
+      /* the brighter rim is what makes a disc read as out-of-focus light
+         rather than as a painted dot */
+      kg.addColorStop(.93, 'rgba(96,238,170,'  + (kAlpha * 0.80) + ')');
+      kg.addColorStop(1,   'rgba(20,155,87,0)');
+      ctx.fillStyle = kg;
       ctx.beginPath();
-      ctx.moveTo(0, 0);
-      ctx.lineTo(Math.cos(ra) * innerR, Math.sin(ra) * innerR);
-      ctx.stroke();
+      ctx.arc(kx, ky, kr, 0, TAU);
+      ctx.fill();
     }
-    ctx.restore();
 
     /* The real logo, held level in the middle of the frame while the barrel
        turns around it, so the wordmark stays readable throughout. It scales
        with the aperture, so the push travels through the logo. */
     /* The logo is a raster with a hard resolution ceiling, so it has to
        retire during the push rather than survive it. */
-    var retire = (t - 0.30) / 0.34;
+    var retire = (t - 0.40) / 0.32;
     retire = retire < 0 ? 0 : retire > 1 ? 1 : retire;
     var markFade = 1 - Math.pow(retire, 1.25);
     if (markReady && markFade > 0.01){
-      var mw = innerR * 1.3;
+      /* Sized against the iris's full travel, not its current radius: the
+         clip above is what reveals it, so the mark comes through the opening
+         instead of growing out of a point. */
+      var mw = HOLE * (0.82 + glow * 0.30);
       var mh = mw * (markImg.naturalHeight / markImg.naturalWidth);
 
       /* Blur by how far past its own resolution the logo is actually being

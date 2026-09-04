@@ -683,6 +683,19 @@ h1,h2,.section-title{
   stroke-dasharray:100; stroke-dashoffset:100;
 }
 
+/* Anamorphic flare, struck just before the aperture blows out. It is a real
+   flare frame on pure black, composited with `screen` so the black drops away
+   and only the light is added - the same way a flare would be layered over a
+   plate in a grade. Sits above the canvas but below the whiteout, and after
+   the HUD in the DOM so the timecode stays readable through it. */
+.lens-flare{
+  position:absolute; left:-25%; right:-25%; top:48%;
+  height:min(70vh, 40vw); z-index:4; opacity:0; pointer-events:none;
+  background:url('assets/lens-flare.webp') 50% 50% / 100% auto no-repeat;
+  mix-blend-mode:screen;
+  will-change:transform, opacity;
+}
+
 /* diagonal light sweep during the lens zoom */
 .light-sweep{
   position:absolute; inset:-20% -60%; z-index:2; pointer-events:none;
@@ -1302,6 +1315,8 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
       </div>
 
       <canvas class="lens-canvas" id="lensCanvas" width="900" height="900" aria-hidden="true"></canvas>
+
+      <div class="lens-flare" id="lensFlare" aria-hidden="true"></div>
 
       <div class="hud" id="hud" aria-hidden="true">
         <span class="hud-item f-stop">ƒ/2.8</span>
@@ -2204,7 +2219,7 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
     isFull: '(prefers-reduced-motion: no-preference)'
   }, function(context){
     if (context.conditions.isReduced){
-      gsap.set('.lens-canvas, .hud, .whiteout, .hero-frame-draw, .light-sweep, .chapter-caption, .statement', { autoAlpha:0 });
+      gsap.set('.lens-canvas, .lens-flare, .hud, .whiteout, .hero-frame-draw, .light-sweep, .chapter-caption, .statement', { autoAlpha:0 });
       gsap.set('#heroContent, .hero-lockup, .hero-kicker, .hero-ctas', { autoAlpha:1, y:0, scale:1, filter:'blur(0px)' });
       return;
     }
@@ -2246,7 +2261,14 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
       .to('.light-sweep', { autoAlpha:0, duration:.08 }, .64)
       .fromTo('#chapterCaption', { autoAlpha:0, y:14 }, { autoAlpha:1, y:0, duration:.1 }, .40)
       .to('#chapterCaption', { autoAlpha:0, y:-14, duration:.1 }, .60)
+      /* The flare travels and grows as the camera closes on the light, peaking
+         just before the aperture blows out, so the flash reads as the thing
+         the flare was building to rather than as a cut. */
+      .fromTo('.lens-flare',
+              { autoAlpha:0, xPercent:-14, yPercent:-50, scale:1.04, rotate:-1.5 },
+              { autoAlpha:.92, xPercent:4, yPercent:-50, scale:1.36, rotate:0.6, duration:.20, ease:'sine.out' }, .49)
       .to('.hud', { autoAlpha:0, duration:.06 }, .68)
+      .to('.lens-flare', { autoAlpha:0, scale:1.9, duration:.07, ease:'power2.in' }, .70)
       .to('#whiteout', { autoAlpha:1, duration:.06 }, .70)
       .to('.lens-canvas', { autoAlpha:0, duration:.05 }, .76)
       /* the flash must be fully clear before the line resolves: the closing

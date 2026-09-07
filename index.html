@@ -261,7 +261,16 @@ h1,h2,.section-title{
    screen reader says the words instead of spelling them. The display face
    carries a slight negative tracking, which is right for sentence case but
    leaves capitals cramped, so it is opened back up here. */
-.section-title.is-caps{ text-transform:uppercase; letter-spacing:.03em; }
+.section-title.is-caps{
+  text-transform:uppercase; letter-spacing:.03em;
+  /* Sized against its own column, not the viewport. The column gets WIDER when
+     the layout stacks - 602px beside the portrait, 769px above it - so a vw
+     size shrinks exactly where there is more room to fill, which is why this
+     heading was covering 40% of its measure on a tablet while the paragraph
+     under it covered 100%. */
+  font-size:clamp(1.9rem, 11cqw, 4rem);
+  line-height:1.02;
+}
 .lede{ font-size:var(--fs-body); color:var(--chrome-500); max-width:38rem; }
 
 /* buttons */
@@ -1043,6 +1052,7 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
 
 /* ============ studio ============ */
 .studio-grid{ display:grid; grid-template-columns:1.1fr .9fr; gap:var(--sp-7); align-items:center; }
+.studio-copy{ container-type:inline-size; }
 .studio-copy p + p{ margin-top:1rem; }
 .studio-copy p{ color:var(--chrome-500); }
 .studio-portrait{

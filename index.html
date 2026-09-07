@@ -2203,12 +2203,18 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
     ctx.restore();
     ctx.restore();
 
-    /* specular sweep across the barrel */
-    ctx.beginPath();
-    ctx.arc(cx, cy, r - 6, Math.PI * 1.15, Math.PI * 1.4);
-    ctx.strokeStyle = 'rgba(255,255,255,.55)';
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    /* Specular sweep, for the drawn barrel only. It is a fixed 45-degree arc of
+       white on the outer rim, and it was earning its keep when the barrel was
+       flat concentric circles. The photograph brings its own highlights all the
+       way round, and this one neither rotates with it nor fades at its ends, so
+       against the photo it reads as a bright band pasted onto the rim. */
+    if (!barrelReady){
+      ctx.beginPath();
+      ctx.arc(cx, cy, r - 6, Math.PI * 1.15, Math.PI * 1.4);
+      ctx.strokeStyle = 'rgba(255,255,255,.55)';
+      ctx.lineWidth = 3;
+      ctx.stroke();
+    }
 
     /* Anamorphic streak, the key art's signature flare. It is a feature of
        the lens surface, so it fades out as the camera travels inside it,

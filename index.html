@@ -257,6 +257,11 @@ h1,h2,.section-title{
 }
 .section-head.wide{ max-width:56rem; }
 .section-title{ font-size:var(--fs-h2); }
+/* Set in caps rather than typed in caps, so the source stays readable and a
+   screen reader says the words instead of spelling them. The display face
+   carries a slight negative tracking, which is right for sentence case but
+   leaves capitals cramped, so it is opened back up here. */
+.section-title.is-caps{ text-transform:uppercase; letter-spacing:.03em; }
 .lede{ font-size:var(--fs-body); color:var(--chrome-500); max-width:38rem; }
 
 /* buttons */
@@ -1547,7 +1552,7 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
       <div class="studio-grid">
         <div class="studio-copy">
           <p class="eyebrow">Calgary, Alberta</p>
-          <h2 class="section-title green-text" id="studio-title" style="margin-block:1.25rem 1.5rem;">A small crew,<br>on purpose.</h2>
+          <h2 class="section-title green-text is-caps" id="studio-title" style="margin-block:1.25rem 1.5rem;">A Small Crew<br>by Design</h2>
           <p>SilverLine Creative is a photography and video production company serving clients across Alberta. We create commercial films, branded content, portraits, and event coverage.</p>
           <p>It is led by Nicolas Rufiange, and we take a limited number of projects at a time so every one gets a director's level of attention, from first concept to final color.</p>
         </div>

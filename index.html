@@ -658,7 +658,19 @@ h1,h2,.section-title{
 }
 
 .lens-canvas{
-  position:absolute; z-index:3; inset:0; margin:auto;
+  position:absolute; z-index:3; margin:auto;
+  /* The lens has to land on the centre of the diamond in the logo, not on the
+     centre of the hero panel. Those are not the same point: the logo shares a
+     column with the tagline and the two buttons, so its centre sits above the
+     panel's by half the height of everything stacked underneath it - 53px on a
+     phone, 10px on a laptop. Pulling the bottom edge in by twice that offset
+     makes `margin:auto` centre the canvas on the logo instead. --lens-shift is
+     --lens-rise is measured from the live layout in script (see
+     alignLensToMark) because the amount moves with the breakpoints, and is set
+     on the hero panel so the flare can read the same number. Done through the
+     box rather than a transform so the scroll timeline keeps sole ownership of
+     `transform`. */
+  inset:0 0 calc(var(--lens-rise, 0px) * 2) 0;
   /* sized so the drawn barrel lands on the key art's lens as it takes over */
   width:min(58vw,536px); height:min(58vw,536px);
   opacity:0; will-change:transform,opacity;
@@ -684,7 +696,9 @@ h1,h2,.section-title{
 .whiteout{
   position:absolute; inset:0; z-index:5; opacity:0; pointer-events:none;
   background:
-    radial-gradient(circle at 50% 50%, #eafff4 0%, var(--green-100) 20%, var(--green-300) 48%, var(--green-500) 70%, var(--green-900) 100%);
+    /* Struck from the middle of the iris, so the core carries the same rise as
+       the lens and the flare rather than sitting at the panel's centre. */
+    radial-gradient(circle at 50% calc(50% - var(--lens-rise, 0px)), #eafff4 0%, var(--green-100) 20%, var(--green-300) 48%, var(--green-500) 70%, var(--green-900) 100%);
 }
 
 /* signature viewfinder frame — draws itself in as the hero enters */
@@ -703,7 +717,10 @@ h1,h2,.section-title{
    plate in a grade. Sits above the canvas but below the whiteout, and after
    the HUD in the DOM so the timecode stays readable through it. */
 .lens-flare{
-  position:absolute; left:-25%; right:-25%; top:50%;
+  /* top is where the hotspot lands: yPercent:-60 against a 60% transform-origin
+     puts the bright core exactly on this line whatever the flare's width. It
+     has to strike the middle of the lens, so it carries the same rise. */
+  position:absolute; left:-25%; right:-25%; top:calc(50% - var(--lens-rise, 0px));
   /* Matching the asset's own ratio means the image maps exactly onto the box,
      so the hotspot really is at 51%/60% of it. That in turn lets the scale be
      anchored on the hotspot: without it, scaling about the box centre walks a
@@ -1890,6 +1907,39 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
   };
   markImg.src = 'assets/mark.png';
 
+  /* Line the canvas up with the diamond in the logo.
+
+     The canvas is centred on the hero panel, but the logo is centred in the
+     column that also carries the tagline and the buttons, so the logo's centre
+     is the higher of the two. Measure the gap and hand it to CSS, which halves
+     it back out through the bottom inset. The gap is layout, not a constant:
+     it is ~53px on a phone and ~10px on a laptop, and it steps at the
+     max-height breakpoints, so it is re-measured on resize.
+
+     offsetTop is used rather than getBoundingClientRect so the reading is the
+     resting layout position even if this runs mid-scroll, when the timeline
+     has the logo scaled up. */
+  function alignLensToMark(){
+    var mark  = document.querySelector('.hero-lockup img');
+    var stage = canvas.parentElement;
+    if (!mark || !stage) return;
+    var sr = stage.getBoundingClientRect();
+    var mr = mark.getBoundingClientRect();
+    if (!sr.height || !mr.height) return;    /* not laid out yet */
+    /* Both read in viewport coordinates, which is what makes this survive the
+       pin: ScrollTrigger moves .hero-pin out of normal flow and into a spacer,
+       so offsetTop chains go wrong mid-scroll, but rects do not. Centres rather
+       than edges because the timeline scales the logo to 2.2 - scaling about
+       an element's own centre leaves that centre where it was, and the lockup
+       is only ever given scale/blur/alpha, never a vertical translate.
+
+       The result is how far the logo's centre sits ABOVE the panel's; the
+       stylesheet pulls the canvas's bottom edge in by twice that to raise the
+       auto-centred box by exactly that much. */
+    var rise = (sr.top + sr.height / 2) - (mr.top + mr.height / 2);
+    stage.style.setProperty('--lens-rise', rise.toFixed(1) + 'px');
+  }
+
   /* The barrel is now a photograph of the 85mm rather than rings drawn by
      hand. Its centre has been cut out to transparency, so the iris below can
      still be animated in the hole where the real blades sat. */
@@ -2230,6 +2280,18 @@ button.work-tile:focus-visible{ outline:2px solid var(--green-400); outline-offs
     ctx.fillRect(cx - r * 2.1, cy - 1.5, r * 4.2, 3);
   }
   drawLens(0);
+
+  /* Run it once now, again once the logo reports a real height (its box drives
+     the measurement), and on every resize, since the offset steps at the
+     hero's max-height breakpoints. */
+  alignLensToMark();
+  if (document.readyState === 'complete') alignLensToMark();
+  else window.addEventListener('load', alignLensToMark);
+  window.addEventListener('resize', alignLensToMark);
+  /* A raw resize fires before ScrollTrigger has redone the pin, so on a phone
+     hiding its URL bar the reading would be taken against a half-updated
+     layout. Re-run once ScrollTrigger has settled. */
+  if (window.ScrollTrigger) ScrollTrigger.addEventListener('refresh', alignLensToMark);
 
   /* ---------- timecode ---------- */
   var tcEl = document.getElementById('hudTimecode');
